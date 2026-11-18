@@ -1,0 +1,4601 @@
+/* ==========================================================================
+   HYDRA LAUNCHER · TEMA "PS5 EXPERIENCE" v10
+   --------------------------------------------------------------------------
+   Instalación: Ajustes → Apariencia → Tema personalizado → pegar este CSS.
+   Requisitos : Chromium 112+ (usa :is(), :has(), :where() y CSS nesting).
+
+   Novedades de la v7 (mejoras sobre la v6)
+   · Biblioteca: ya se ven los juegos. La v4 convertía el contenedor de la
+     biblioteca en una cuadrícula forzada (grid + padding + overflow + ancho
+     de cada hijo, todo con !important) y eso rompía el layout de Hydra y
+     dejaba la lista vacía. Ahora el layout lo decide Hydra; el tema solo
+     pinta las tarjetas (marco, sombra, brillo al enfocar).
+   · Menú de la flechita (perfil): ya no se corta. El panel medía 250px como
+     mínimo y empezaba 18px dentro de la sidebar (que mide 250px), así que
+     el lado derecho (con los contadores 10 y 1) quedaba recortado. Ahora
+     el panel mide lo que ocupa su contenido (máx. 220px).
+   · Catálogo: tarjetas tipo póster en una cuadrícula adaptable, filtros
+     laterales conservados y portadas completas sin recortes.
+   · Ficha de juego: rediseño cinematográfico con superficies Liquid Glass.
+   · Inicio: el carrusel solo se aplica dentro de la página de Inicio, para
+     que no afecte a otras pantallas con tarjetas.
+   · Gestor de temas: tarjetas de apariencia con rejilla adaptable y estado
+     activo Liquid Glass.
+   · Accesibilidad y responsive: ajustes para ventanas pequeñas, controles
+     táctiles, alto contraste y movimiento reducido.
+   · Ajustes rápidos: acento, intensidad del fondo, velocidad y elevación.
+   · v8: jerarquía de Inicio corregida, perfil responsive y menos efectos
+     costosos para mejorar fluidez sin perder el acabado Liquid Glass.
+   · v9: Biblioteca con barra y tarjetas Liquid Glass sin cambiar su layout;
+     descargas completadas más compactas, legibles y adaptables.
+   · v10: Biblioteca con controles, insignias, trofeos y portadas renovados
+     con acabados PS5 de alto contraste.
+
+   Índice
+   01 Fuentes · 02 Variables · 03 Base · 04 Fondo · 05 Scrollbars
+   06 Cristal · 07 Sidebar: navegación · 08 Sidebar: perfil
+   09 Menús desplegables · 10 Sidebar: lista de juegos · 11 Buscador
+   12 Botones · 13 Inputs · 14 Tarjetas de juego · 15 Biblioteca
+   16 Descargas · 17 Catálogo · 18 Inicio · 19 Perfil · 20 Paneles
+   21 Pestañas e insignias · 22 Modales y tooltips · 23 Foco global
+   24 Keyframes · 25 Movimiento reducido · 26 Acabado adaptable
+   27 Microinteracciones globales
+   ========================================================================== */
+
+
+/* ==========================================================================
+   01 · FUENTES
+   ========================================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap");
+
+
+/* ==========================================================================
+   02 · VARIABLES
+   ========================================================================== */
+:root {
+  color-scheme: dark;
+
+  --ps5-font: "Plus Jakarta Sans", "Inter", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  --ps5-font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --ps5-fs-xs: 0.75rem;
+  --ps5-fs-sm: 0.8125rem;
+  --ps5-fs-md: 0.9375rem;
+  --ps5-fs-lg: 1.125rem;
+  --ps5-fs-xl: 1.5rem;
+  --ps5-fs-2xl: 2.25rem;
+  --ps5-fw-medium: 500;
+  --ps5-fw-semibold: 600;
+  --ps5-fw-bold: 700;
+  --ps5-fw-black: 800;
+
+  --ps5-midnight: #040814;
+  --ps5-navy: #0a1633;
+  --ps5-electric: #132c63;
+  --ps5-blue: #0070d1;
+  --ps5-blue-light: #38a1ff;
+  /* Ajustes rápidos: acento, intensidad del fondo (0-1), velocidad y elevación de tarjetas. */
+  --ps5-accent-rgb: 56, 161, 255;
+  --ps5-accent-soft: rgba(var(--ps5-accent-rgb), 0.16);
+  --ps5-glass-edge: rgba(170, 215, 255, 0.22);
+  --ps5-blue-glow: rgba(var(--ps5-accent-rgb), 0.55);
+  --ps5-ambient-opacity: 0.88;
+  --ps5-ambient-speed: 48s;
+  --ps5-hover-lift: -2px;
+  --ps5-white: #ffffff;
+  --ps5-danger: #ff5a6e;
+  --ps5-danger-soft: rgba(255, 90, 110, 0.16);
+
+  --ps5-text: #ffffff;
+  --ps5-text-secondary: rgba(255, 255, 255, 0.68);
+  --ps5-text-muted: rgba(255, 255, 255, 0.44);
+  --ps5-text-on-light: #0a1633;
+
+  --ps5-surface-1: rgba(255, 255, 255, 0.018);
+  --ps5-surface-2: rgba(255, 255, 255, 0.042);
+  --ps5-surface-3: rgba(255, 255, 255, 0.085);
+  --ps5-surface-dark: rgba(255, 255, 255, 0.032);
+  --ps5-glass:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.025) 28%, rgba(255, 255, 255, 0.008) 62%, rgba(255, 255, 255, 0.05) 100%),
+    rgba(18, 27, 44, 0.11);
+  --ps5-glass-strong:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.035) 48%, rgba(255, 255, 255, 0.07) 100%),
+    rgba(13, 21, 36, 0.24);
+  /* Menús translúcidos, con suficiente contraste para mantener la lectura. */
+  --ps5-menu-bg: linear-gradient(160deg, rgba(20, 41, 95, 0.92) 0%, rgba(10, 22, 52, 0.92) 100%);
+  --ps5-menu-bg-solid: rgba(12, 26, 62, 0.90);
+
+  --ps5-border: rgba(255, 255, 255, 0.19);
+  --ps5-border-soft: rgba(255, 255, 255, 0.10);
+  --ps5-border-strong: rgba(255, 255, 255, 0.38);
+
+  --ps5-blur: blur(30px) saturate(180%);
+  --ps5-blur-soft: blur(22px) saturate(165%);
+
+  --ps5-radius-pill: 999px;
+  --ps5-radius-card: 20px;
+  --ps5-radius-panel: 24px;
+  --ps5-radius-modal: 28px;
+  --ps5-radius-md: 14px;
+  --ps5-radius-sm: 10px;
+
+  --ps5-shadow-card: 0 10px 28px rgba(0, 0, 0, 0.45);
+  --ps5-shadow-panel: 0 18px 48px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --ps5-shadow-pop: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --ps5-shadow-button: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 24px rgba(255, 255, 255, 0.12);
+  --ps5-shadow-button-hover: 0 16px 44px rgba(0, 0, 0, 0.55), 0 0 36px rgba(255, 255, 255, 0.28), 0 0 0 4px rgba(56, 161, 255, 0.35);
+  --ps5-focus-ring: 0 0 0 2px var(--ps5-midnight), 0 0 0 4px var(--ps5-blue-light), 0 0 0 8px rgba(0, 112, 209, 0.38);
+  --ps5-field-focus: 0 0 0 4px rgba(56, 161, 255, 0.28), 0 0 28px rgba(0, 112, 209, 0.35);
+
+  --ps5-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ps5-dur-fast: 0.24s;
+  --ps5-dur: 0.4s;
+  --ps5-dur-slow: 0.72s;
+
+  --ps5-z-card-focus: 30;
+
+  /* Catálogo: ancho mínimo de las tarjetas póster. */
+  --ps5-catalog-min: 340px;
+
+  /* Portadas de Descargas: ajusta estos dos si las quieres más grandes
+     o con otra proporción (ej. 16 / 9 para imágenes horizontales). */
+  --ps5-dl-cover-w: 112px;
+  --ps5-dl-cover-ratio: 2 / 3;
+}
+
+
+/* ==========================================================================
+   03 · BASE GLOBAL Y TIPOGRAFÍA
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  font-family: var(--ps5-font) !important;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+code, pre, kbd, samp, code *, pre * { font-family: var(--ps5-font-mono) !important; }
+
+body {
+  color: var(--ps5-text) !important;
+  font-size: var(--ps5-fs-md);
+  font-weight: var(--ps5-fw-medium);
+  letter-spacing: -0.005em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ps5-text) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+  letter-spacing: -0.02em !important;
+}
+
+h1 { font-weight: var(--ps5-fw-black) !important; letter-spacing: -0.03em !important; }
+
+label, small, [class*="muted"], [class*="subtitle"], [class*="description"] {
+  color: var(--ps5-text-secondary) !important;
+}
+
+::selection { background: rgba(0, 112, 209, 0.6); color: #fff; }
+::placeholder { color: var(--ps5-text-muted) !important; opacity: 1; }
+
+hr, [class*="divider"], [class*="separator"] {
+  border: 0 !important;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ps5-border), transparent) !important;
+}
+
+kbd {
+  background: var(--ps5-surface-3) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-bottom-width: 2px !important;
+  border-radius: 8px !important;
+  padding: 2px 8px;
+}
+
+img { -webkit-user-drag: none; }
+
+.title-bar {
+  background: rgba(4, 8, 20, 0.88) !important;
+  border-bottom: 1px solid var(--ps5-border-soft) !important;
+}
+
+
+/* ==========================================================================
+   04 · FONDO AMBIENTAL
+   ========================================================================== */
+html {
+  background:
+    radial-gradient(ellipse 90% 70% at 12% -10%, rgba(19, 44, 99, 0.95) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 60% at 100% 105%, rgba(0, 112, 209, 0.30) 0%, transparent 62%),
+    radial-gradient(ellipse 120% 90% at 50% 35%, #0a1633 0%, #060d22 55%, #040814 100%),
+    #040814 !important;
+  min-height: 100%;
+}
+
+body { background: transparent !important; position: relative; }
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 34% at 24% 30%, rgba(56, 161, 255, 0.16), transparent 70%),
+    radial-gradient(34% 30% at 76% 66%, rgba(0, 112, 209, 0.20), transparent 70%),
+    radial-gradient(26% 24% at 60% 12%, rgba(19, 44, 99, 0.55), transparent 70%),
+    radial-gradient(circle at 72% 56%, rgba(190, 225, 255, 0.16) 0 1px, rgba(34, 90, 160, 0.10) 12px, rgba(8, 24, 52, 0.05) 28px, transparent 34px),
+    radial-gradient(circle at 72% 56%, transparent 0 41px, rgba(120, 190, 255, 0.13) 42px 43px, transparent 44px),
+    radial-gradient(circle at 22% 76%, rgba(180, 220, 255, 0.10) 0 1px, rgba(28, 76, 142, 0.07) 16px, transparent 24px),
+    radial-gradient(circle at 22% 76%, transparent 0 30px, rgba(100, 175, 255, 0.10) 31px 32px, transparent 33px),
+    radial-gradient(ellipse 40% 24% at 50% 90%, rgba(56, 161, 255, 0.09), transparent 78%);
+  opacity: var(--ps5-ambient-opacity);
+  animation: ps5-ambient-drift var(--ps5-ambient-speed) ease-in-out infinite alternate;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: -4%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.31;
+  background-image:
+    linear-gradient(112deg, transparent 34%, rgba(74, 164, 255, 0.12) 46%, rgba(226, 244, 255, 0.92) 50%, rgba(74, 164, 255, 0.34) 53%, transparent 68%),
+    linear-gradient(128deg, transparent 36%, rgba(112, 190, 255, 0.10) 47%, rgba(239, 248, 255, 0.82) 50%, rgba(112, 190, 255, 0.30) 53%, transparent 67%),
+    linear-gradient(90deg, transparent, rgba(220, 240, 255, 0.82), transparent),
+    linear-gradient(0deg, transparent, rgba(220, 240, 255, 0.72), transparent),
+    linear-gradient(90deg, transparent, rgba(130, 199, 255, 0.76), transparent),
+    linear-gradient(0deg, transparent, rgba(130, 199, 255, 0.66), transparent),
+    radial-gradient(circle, rgba(206, 232, 255, 0.72) 0 0.7px, transparent 1.4px),
+    radial-gradient(circle, rgba(92, 176, 255, 0.62) 0 0.8px, transparent 1.6px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.48) 0 0.6px, transparent 1.3px),
+    radial-gradient(circle, rgba(179, 220, 255, 0.54) 0 1px, transparent 1.9px),
+    radial-gradient(circle, rgba(83, 169, 255, 0.42) 0 1.25px, transparent 2px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.36) 0 0.55px, transparent 1.2px),
+    radial-gradient(circle at 14% 78%, transparent 0 42px, rgba(56, 161, 255, 0.13) 43px 44px, transparent 45px),
+    radial-gradient(circle at 87% 22%, transparent 0 68px, rgba(170, 215, 255, 0.09) 69px 70px, transparent 71px),
+    radial-gradient(ellipse 190px 130px at 8% 84%, rgba(0, 112, 209, 0.10), transparent 100%),
+    radial-gradient(ellipse 220px 160px at 92% 18%, rgba(56, 161, 255, 0.08), transparent 100%);
+  background-size:
+    190px 2px, 145px 1.5px,
+    18px 1px, 1px 18px, 14px 1px, 1px 14px,
+    85px 103px, 113px 127px, 151px 163px,
+    173px 181px, 207px 193px, 139px 157px,
+    100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-position:
+    118% 18%, -18% 72%,
+    24% 31%, 24% 31%, 72% 76%, 72% 76%,
+    13px 19px, 71px 43px, 29px 107px,
+    113px 61px, 37px 151px, 157px 83px,
+    0 0, 0 0, 0 0, 0 0;
+  background-repeat:
+    no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat,
+    repeat, repeat, repeat, repeat, repeat, repeat,
+    no-repeat, no-repeat, no-repeat, no-repeat;
+  animation:
+    ps5-particle-float 42s linear infinite alternate,
+    ps5-star-trails 15s linear infinite;
+}
+
+:where(body, #root, main, article, section, [class~="container"], [class~="content"], [class~="wrapper"], [class~="app"]) {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+
+/* ==========================================================================
+   05 · BARRAS DE DESPLAZAMIENTO
+   ========================================================================== */
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.20);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--ps5-radius-pill);
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(56, 161, 255, 0.75); background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:active { background: var(--ps5-blue-light); background-clip: padding-box; }
+*::-webkit-scrollbar-corner, *::-webkit-scrollbar-button { background: transparent; display: none; }
+
+
+/* ==========================================================================
+   06 · CRISTAL: SIDEBAR, HEADER, BARRA INFERIOR
+   ========================================================================== */
+aside,
+[class~="sidebar"],
+[class*="sidebar_sidebar"] {
+  background: var(--ps5-glass) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  border: 0 !important;
+  border-right: 1px solid var(--ps5-border) !important;
+  box-shadow: 12px 0 48px rgba(0, 0, 0, 0.35), inset -1px 0 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+[class~="header"],
+[class*="header_header"] {
+  background: var(--ps5-glass) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--ps5-border) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+[class~="bottom-panel"],
+footer {
+  background: var(--ps5-glass-strong) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  border: 0 !important;
+  border-top: 1px solid var(--ps5-border) !important;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+
+/* ==========================================================================
+   07 · SIDEBAR: NAVEGACIÓN
+   --------------------------------------------------------------------------
+   Se excluyen los botones del perfil y del menú desplegable: tienen sus
+   propias reglas (secciones 08 y 09).
+   ========================================================================== */
+[class*="sidebar"] :is(a, button, [role="button"]):not([class*="dropdown"] *, [class*="sidebar-profile"] *) {
+  border-radius: var(--ps5-radius-pill) !important;
+  color: var(--ps5-text-secondary) !important;
+  transition:
+    background var(--ps5-dur-fast) ease,
+    color var(--ps5-dur-fast) ease,
+    transform var(--ps5-dur) var(--ps5-ease),
+    box-shadow var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+[class*="sidebar"] :is(a, button, [role="button"]):not([class*="dropdown"] *, [class*="sidebar-profile"] *):hover {
+  background: var(--ps5-surface-3) !important;
+  color: var(--ps5-text) !important;
+  transform: translateX(3px);
+}
+
+[class*="sidebar"] :is(a, button, [role="button"]):not([class*="dropdown"] *, [class*="sidebar-profile"] *):active { transform: scale(0.98); }
+
+[class*="sidebar"] :is([class*="--active"], [class*="__active"], [aria-current="page"], [aria-selected="true"]):not([class*="dropdown"] *, [class*="sidebar-profile"] *) {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: var(--ps5-text) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+  border: 0 !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24), 0 0 24px rgba(56, 161, 255, 0.28) !important;
+}
+
+[class*="sidebar"] :is([class*="section-title"], [class*="heading"], h2, h3, h4) {
+  color: var(--ps5-text-muted) !important;
+  font-size: var(--ps5-fs-xs) !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+  letter-spacing: 0.04em !important;
+}
+
+[class*="sidebar"] :is([class*="handle"], [class*="resize"]):hover {
+  background: var(--ps5-blue-light) !important;
+  box-shadow: 0 0 14px var(--ps5-blue-glow);
+}
+
+
+/* ==========================================================================
+   08 · SIDEBAR: PERFIL (avatar + nombre + flechita)
+   --------------------------------------------------------------------------
+   Solo el contenedor exterior (sin "__") es de cristal; las piezas internas
+   quedan transparentes. El menú desplegable (dropdown / menu / popover)
+   queda EXCLUIDO de estas reglas para que la sección 09 lo pinte sólido.
+   ========================================================================== */
+[class*="sidebar-profile"]:not([class*="__"]) {
+  position: relative;
+  z-index: 40;
+  align-items: center;
+  gap: 4px;
+  padding: 6px !important;
+  overflow: visible !important;      /* el menú no se recorta */
+  background: var(--ps5-glass) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  box-shadow: var(--ps5-shadow-panel) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Piezas internas: transparentes y sin marco (menos el menú desplegable) */
+[class*="sidebar-profile"] :is(button, a, [role="button"], [class*="__"]):not(
+  svg, img,
+  [class*="badge"], [class*="count"], [class*="avatar"],
+  [class*="dropdown"], [class*="dropdown"] *,
+  [role="menu"], [role="menu"] *,
+  [class*="popover"], [class*="popover"] *
+) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding-block: 0;
+}
+
+/* Botón principal (avatar + nombre) */
+[class*="sidebar-profile"] :is(button, a, [role="button"]):not(:has(> svg:only-child), [class*="dropdown"] *, [role="menu"] *, [class*="popover"] *) {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 4px 4px !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  color: var(--ps5-text) !important;
+}
+
+[class*="sidebar-profile"] :is(button, a, [role="button"]):not(:has(> svg:only-child), [class*="dropdown"] *, [role="menu"] *, [class*="popover"] *):hover {
+  background: rgba(255, 255, 255, 0.10) !important;
+  transform: none;
+}
+
+/* Avatar */
+[class*="sidebar-profile"] :is(img, [class*="avatar"]):not([class*="dropdown"] *, [role="menu"] *) {
+  flex-shrink: 0;
+  border-radius: 50% !important;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 2px var(--ps5-midnight),
+    0 0 0 4px #ffffff,
+    0 0 20px 2px rgba(56, 161, 255, 0.45) !important;
+}
+
+/* Nombre */
+[class*="sidebar-profile"] :is([class*="title"], [class*="name"], p):not([class*="dropdown"] *, [role="menu"] *) {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ps5-text) !important;
+  font-size: var(--ps5-fs-md) !important;
+  font-weight: var(--ps5-fw-black) !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Flechita: botón circular */
+[class*="sidebar-profile"] :is(button, [role="button"]):has(> svg:only-child):not([class*="dropdown"] *, [role="menu"] *, [class*="popover"] *) {
+  flex-shrink: 0;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: var(--ps5-surface-3) !important;
+  border: 1px solid var(--ps5-border-soft) !important;
+  color: var(--ps5-text-secondary) !important;
+  transition: background var(--ps5-dur-fast) ease, color var(--ps5-dur-fast) ease, transform var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+[class*="sidebar-profile"] :is(button, [role="button"]):has(> svg:only-child):not([class*="dropdown"] *, [role="menu"] *, [class*="popover"] *) svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--ps5-dur) var(--ps5-ease);
+}
+
+[class*="sidebar-profile"] :is(button, [role="button"]):has(> svg:only-child):not([class*="dropdown"] *, [role="menu"] *, [class*="popover"] *):hover {
+  background: #ffffff !important;
+  color: var(--ps5-text-on-light) !important;
+  transform: scale(1.025);
+}
+
+[class*="sidebar-profile"] :is([aria-expanded="true"], [data-state="open"]) > svg { transform: rotate(180deg); }
+
+
+/* ==========================================================================
+   09 · MENÚS DESPLEGABLES (flechita del perfil, menús de contexto, listas)
+   --------------------------------------------------------------------------
+   v5 · Por qué se cortaba el menú del perfil: el panel tenía
+   min-width: 250px y Hydra lo coloca ~18px dentro de la sidebar (que mide
+   250px). El lado derecho (donde van los contadores) salía de la sidebar y
+   se recortaba. Ahora el panel mide lo que ocupa su contenido, con un
+   máximo de 220px, y las filas son un poco más compactas.
+
+   El PANEL se detecta de varias formas (roles ARIA, clases típicas y, sobre
+   todo, por estructura: "el contenedor que tiene las filas como hijos
+   directos") y recibe fondo OPACO, borde, sombra y z-index alto.
+
+   Si algún menú sigue viéndose mal: Ctrl+Shift+I → inspecciona el panel →
+   pásame el nombre de su clase y lo agrego al selector.
+   ========================================================================== */
+
+/* El fondo "invisible" que captura clics no debe teñir nada */
+:root :is([class*="dropdown"], [class*="popover"])[class*="backdrop"],
+:root :is([class*="dropdown"], [class*="popover"])[class*="overlay"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* ---- PANEL ---- */
+:root:root :is(
+  [role="menu"],
+  [role="listbox"],
+  [class*="dropdown"]:is([class*="__menu"], [class*="__content"], [class*="__list"], [class*="__items"], [class*="__panel"], [class*="__popup"], [class*="__container"]),
+  [class*="dropdown"]:has(> :is([class*="__item"], [role="menuitem"])),
+  [class*="dropdown"] :is(div, ul, nav):has(> :is([class*="__item"], [role="menuitem"], li)),
+  [class*="context-menu"]:not([class*="__"]),
+  [class*="sidebar-profile"] :is(div, ul, nav):has(> :is(button, a, li, [role="menuitem"]):nth-child(3)),
+  [class*="sidebar-profile"] :is([class*="__menu"], [class*="__popover"], [class*="__options"], [class*="__dropdown"])
+):not(
+  [class*="-item"], [class*="__item-"],
+  [class*="trigger"], [class*="toggle"],
+  [class*="backdrop"], [class*="overlay"],
+  [class*="separator"], [class*="divider"],
+  [class*="badge"], [class*="count"],
+  .search-dropdown, .search-dropdown *
+) {
+  z-index: 9999 !important;
+  isolation: isolate;
+  box-sizing: border-box;
+  min-width: 0 !important;                     /* v5: antes 250px (se cortaba) */
+  width: max-content !important;
+  max-width: 220px !important;                 /* v5: cabe dentro de la sidebar */
+  margin-top: 8px;
+  padding: 8px !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+  background: var(--ps5-menu-bg), var(--ps5-menu-bg-solid) !important;   /* OPACO */
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  border-radius: 22px !important;
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.80),
+    0 0 0 1px rgba(4, 8, 20, 0.70),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  animation: ps5-menu-in 0.32s var(--ps5-ease) backwards;
+
+  /* Contenedores internos del mismo menú: sin segundo marco */
+  & :is(
+    [role="menu"], [role="listbox"],
+    [class*="dropdown"]:not([class*="__item"], [class*="-item"], [class*="trigger"], [class*="badge"], [class*="count"]),
+    [class*="__menu"]:not([class*="-item"]),
+    [class*="__list"], [class*="__items"], [class*="__content"], [class*="__container"], [class*="__panel"]
+  ) {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Envoltorios de fila que ya contienen un botón/enlace: sin estilo propio */
+  & [class*="__item"]:has(button, a, [role="menuitem"]):not([class*="__items"], [class*="__item-"]) {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  /* Filas */
+  & :is(
+    button, a, [role="menuitem"], [role="option"],
+    [class*="__item"]:not(:has(button, a, [role="menuitem"]), [class*="__items"], [class*="__item-"])
+  ) {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+    transform: none !important;
+    flex: none !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-size: var(--ps5-fs-md) !important;
+    font-weight: var(--ps5-fw-semibold) !important;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--ps5-dur-fast) ease, color var(--ps5-dur-fast) ease, box-shadow var(--ps5-dur) var(--ps5-ease) !important;
+
+    /* Fila enfocada: blanca con texto oscuro (como la PS5) */
+    &:is(:hover, :focus-visible, [aria-selected="true"], [data-highlighted]) {
+      background: #ffffff !important;
+      color: var(--ps5-text-on-light) !important;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(56, 161, 255, 0.40) !important;
+    }
+
+    &:is(:hover, :focus-visible, [aria-selected="true"], [data-highlighted]) :is(svg, span, p, small, div):not([class*="badge"], [class*="count"], [class*="badge"] *, [class*="count"] *) {
+      color: var(--ps5-text-on-light) !important;
+      fill: currentColor;
+    }
+  }
+
+  /* Iconos */
+  & :is(button, a, [role="menuitem"]) svg {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Contadores (Notificaciones 10, Amigos 1) */
+  & :is([class*="badge"], [class*="count"]) {
+    margin-left: auto;
+    flex-shrink: 0;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 8px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border: 0 !important;
+    border-radius: var(--ps5-radius-pill) !important;
+    background: var(--ps5-blue) !important;
+    color: #ffffff !important;
+    font-size: var(--ps5-fs-xs) !important;
+    font-weight: var(--ps5-fw-black) !important;
+    box-shadow: 0 0 14px rgba(0, 112, 209, 0.55) !important;
+  }
+
+  /* Separador */
+  & :is(hr, [class*="separator"], [class*="divider"]) {
+    height: 1px;
+    margin: 6px 10px !important;
+    background: var(--ps5-border) !important;
+  }
+
+  /* Última fila (Cerrar sesión): tono de peligro */
+  & :is(button, a, [role="menuitem"]):is(:last-child:not(:first-child)),
+  & [class*="__item"]:last-child:not(:first-child) :is(button, a) {
+    color: var(--ps5-danger) !important;
+
+    &:is(:hover, :focus-visible) {
+      background: var(--ps5-danger) !important;
+      color: #ffffff !important;
+      box-shadow: 0 12px 30px rgba(255, 90, 110, 0.45) !important;
+    }
+
+    &:is(:hover, :focus-visible) :is(svg, span, p) { color: #ffffff !important; }
+  }
+}
+
+
+/* ==========================================================================
+   10 · SIDEBAR: LISTA DE JUEGOS (estilo columna de la PS5)
+   ========================================================================== */
+[class*="sidebar"] :is(a, button, [role="button"]):has([class*="game-icon"]) {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-height: 54px;
+  padding: 8px 14px 8px 8px !important;
+  border-radius: 18px !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+  letter-spacing: -0.01em;
+}
+
+[class*="sidebar"] :is(a, button, [role="button"]):has([class*="game-icon"]):hover {
+  background: rgba(255, 255, 255, 0.10) !important;
+  transform: translateX(4px);
+}
+
+[class*="sidebar"] [class*="game-icon"] {
+  width: 38px !important;
+  height: 38px !important;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 11px !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.14);
+  transition: transform var(--ps5-dur) var(--ps5-ease), box-shadow var(--ps5-dur) var(--ps5-ease);
+}
+
+[class*="sidebar"] :is(a, button, [role="button"]):has([class*="game-icon"]):hover [class*="game-icon"] {
+  transform: scale(1.04);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6), 0 0 0 2px #ffffff, 0 0 18px rgba(56, 161, 255, 0.55);
+}
+
+[class*="sidebar"] :is(a, button, [role="button"]):has([class*="game-icon"]):is([class*="--active"], [class*="__active"], [aria-current="page"]) {
+  background: rgba(255, 255, 255, 0.20) !important;
+}
+
+[class*="sidebar"] :is(a, button, [role="button"], li):has([class*="game-icon"]) svg:not([class*="game-icon"]) {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 15px;
+  height: 15px;
+  color: rgba(255, 255, 255, 0.34) !important;
+  fill: currentColor;
+  transition: color var(--ps5-dur-fast) ease, transform var(--ps5-dur) var(--ps5-ease);
+}
+
+[class*="sidebar"] :is(a, button, [role="button"], li):has([class*="game-icon"]):hover svg:not([class*="game-icon"]) {
+  color: var(--ps5-blue-light) !important;
+  transform: scale(1.08);
+}
+
+
+/* ==========================================================================
+   11 · HEADER: BUSCADOR
+   ========================================================================== */
+:is([class*="header"][class*="search"]:not([class*="input"]), [class*="search-bar"], [class*="search-field"]) {
+  background: var(--ps5-surface-dark) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  transition:
+    background var(--ps5-dur) var(--ps5-ease),
+    border-color var(--ps5-dur) var(--ps5-ease),
+    box-shadow var(--ps5-dur) var(--ps5-ease),
+    transform var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+:is([class*="header"][class*="search"]:not([class*="input"]), [class*="search-bar"], [class*="search-field"]):is(:focus-within, [class*="--focused"]) {
+  background: rgba(8, 18, 44, 0.85) !important;
+  border-color: var(--ps5-blue-light) !important;
+  box-shadow: var(--ps5-field-focus) !important;
+  transform: scale(1.02);
+}
+
+[class*="search"] input {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--ps5-text) !important;
+}
+
+.title-bar-search {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(56, 161, 255, 0.08)),
+    rgba(8, 18, 38, 0.72) !important;
+  border: 1px solid var(--ps5-glass-edge) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+  transition: background var(--ps5-dur) var(--ps5-ease), border-color var(--ps5-dur) ease, box-shadow var(--ps5-dur) ease;
+}
+
+.title-bar-search:is(:focus-within, .title-bar-search--focused) {
+  background:
+    linear-gradient(135deg, rgba(56, 161, 255, 0.17), rgba(255, 255, 255, 0.06)),
+    rgba(8, 18, 38, 0.86) !important;
+  border-color: rgba(110, 190, 255, 0.58) !important;
+  box-shadow: 0 0 0 3px rgba(56, 161, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+.title-bar-search__icon {
+  color: rgba(176, 218, 255, 0.82) !important;
+  flex-shrink: 0;
+}
+
+.title-bar-search__input {
+  min-width: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--ps5-text) !important;
+}
+
+.title-bar-search__input::placeholder {
+  color: rgba(220, 234, 250, 0.52) !important;
+}
+
+.title-bar-search__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  color: rgba(220, 234, 250, 0.7) !important;
+}
+
+.title-bar-search__clear:hover {
+  border-color: rgba(170, 215, 255, 0.22) !important;
+  background: rgba(56, 161, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+/* Barra superior: más aire sin alterar las dimensiones de los controles nativos. */
+.title-bar {
+  gap: clamp(6px, 0.9vw, 14px);
+  padding-left: clamp(10px, 1.2vw, 18px) !important;
+  background:
+    linear-gradient(180deg, rgba(13, 26, 50, 0.96), rgba(5, 10, 23, 0.98)) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
+}
+
+.title-bar :is(button, [role="button"]) {
+  transform: none !important;
+}
+
+.title-bar__navigation {
+  display: flex;
+  flex-shrink: 0;
+  gap: 5px !important;
+  margin-left: 4px !important;
+  padding: 3px !important;
+  border: 1px solid rgba(170, 215, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+  -webkit-app-region: no-drag;
+}
+
+.navigation-arrows__button {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 32px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: rgba(221, 237, 255, 0.78) !important;
+  box-shadow: none !important;
+}
+
+.navigation-arrows__button:hover:not(:disabled) {
+  border-color: rgba(170, 215, 255, 0.2) !important;
+  background: rgba(56, 161, 255, 0.17) !important;
+  color: #ffffff !important;
+}
+
+.navigation-arrows__button:disabled {
+  opacity: 0.38;
+}
+
+.title-bar__search {
+  min-width: 0;
+  padding-inline: clamp(10px, 1.5vw, 24px) !important;
+}
+
+.title-bar-search {
+  max-width: 500px;
+  height: 34px;
+  padding-inline: 13px;
+  gap: 10px;
+  border-radius: 15px !important;
+}
+
+.title-bar__big-picture {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 34px;
+  gap: 8px !important;
+  margin-left: 2px;
+  padding: 0 14px !important;
+  border: 1px solid rgba(170, 215, 255, 0.18) !important;
+  border-radius: 13px !important;
+  background:
+    linear-gradient(135deg, rgba(56, 161, 255, 0.14), rgba(255, 255, 255, 0.035)),
+    rgba(8, 18, 38, 0.48) !important;
+  color: rgba(227, 240, 255, 0.82) !important;
+  font-size: var(--ps5-fs-xs) !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+  opacity: 1 !important;
+  -webkit-app-region: no-drag;
+  transition: background var(--ps5-dur-fast) ease, border-color var(--ps5-dur-fast) ease, color var(--ps5-dur-fast) ease, box-shadow var(--ps5-dur-fast) ease !important;
+}
+
+.title-bar__big-picture:hover {
+  border-color: rgba(125, 196, 255, 0.4) !important;
+  background:
+    linear-gradient(135deg, rgba(56, 161, 255, 0.26), rgba(255, 255, 255, 0.075)),
+    rgba(8, 18, 38, 0.72) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 18px rgba(56, 161, 255, 0.14) !important;
+}
+
+.title-bar__big-picture svg {
+  flex-shrink: 0;
+  color: #9bd1ff !important;
+}
+
+.title-bar__window-controls {
+  gap: 2px;
+}
+
+.title-bar__window-control {
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.title-bar__window-control:hover {
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+
+.title-bar__window-control--close:hover {
+  border-radius: 10px !important;
+  background: rgba(255, 90, 110, 0.8) !important;
+}
+
+@media (max-width: 680px) {
+  .title-bar {
+    gap: 5px;
+    padding-left: 7px !important;
+  }
+
+  .title-bar__navigation {
+    gap: 2px !important;
+    margin-left: 0 !important;
+    padding: 2px !important;
+  }
+
+  .navigation-arrows__button {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .title-bar__search {
+    padding-inline: 5px !important;
+  }
+
+  .title-bar-search {
+    height: 31px;
+    padding-inline: 10px;
+  }
+
+  .title-bar__big-picture {
+    min-height: 31px;
+    gap: 5px !important;
+    margin-left: 0;
+    padding-inline: 9px !important;
+  }
+}
+
+.search-dropdown {
+  box-sizing: border-box;
+  max-width: calc(100vw - 20px) !important;
+  padding: 8px !important;
+  overflow-x: hidden !important;
+  background:
+    linear-gradient(145deg, rgba(56, 161, 255, 0.18), rgba(255, 255, 255, 0.045) 58%),
+    rgba(7, 16, 34, 0.84) !important;
+  border: 1px solid var(--ps5-glass-edge) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 22px 54px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 24px rgba(56, 161, 255, 0.12) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(185%) !important;
+  backdrop-filter: blur(30px) saturate(185%) !important;
+  color: var(--ps5-text) !important;
+}
+
+.search-dropdown__section {
+  padding: 4px 0;
+}
+
+.search-dropdown__section:not(:last-child) {
+  border-bottom: 1px solid rgba(170, 215, 255, 0.16) !important;
+}
+
+.search-dropdown__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px 8px;
+}
+
+.search-dropdown__section-title {
+  color: rgba(207, 229, 255, 0.72) !important;
+  font-size: var(--ps5-fs-xs) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.search-dropdown__shop-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgba(170, 215, 255, 0.18) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  background: rgba(3, 10, 24, 0.42) !important;
+}
+
+.search-dropdown__shop-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 24px;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  background: transparent !important;
+  color: rgba(220, 234, 250, 0.68) !important;
+}
+
+.search-dropdown__shop-button:hover,
+.search-dropdown__shop-button--active {
+  border-color: rgba(145, 205, 255, 0.22) !important;
+  background: rgba(56, 161, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+.search-dropdown__clear-text-button {
+  padding: 4px 8px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: rgba(176, 218, 255, 0.8) !important;
+  font-size: var(--ps5-fs-xs) !important;
+}
+
+.search-dropdown__clear-text-button:hover {
+  color: #ffffff !important;
+}
+
+.search-dropdown__list {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.search-dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100% !important;
+  min-height: 40px;
+  padding: 7px 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  color: rgba(244, 249, 255, 0.9) !important;
+  text-align: left;
+  transition: background var(--ps5-dur-fast) ease, border-color var(--ps5-dur-fast) ease !important;
+}
+
+.search-dropdown__item:is(:hover, :focus-visible, .search-dropdown__item--active) {
+  border-color: rgba(138, 202, 255, 0.2) !important;
+  background: var(--ps5-accent-soft) !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.search-dropdown__item-icon {
+  flex-shrink: 0;
+  color: var(--ps5-blue-light) !important;
+}
+
+.search-dropdown__item-icon--image {
+  border-radius: 5px !important;
+  object-fit: cover;
+}
+
+.search-dropdown__item-text {
+  min-width: 0;
+  overflow: hidden;
+  color: inherit !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-dropdown__item-remove {
+  border-radius: 50% !important;
+  color: rgba(220, 234, 250, 0.64) !important;
+}
+
+.search-dropdown__item-remove:hover {
+  background: rgba(56, 161, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+.search-dropdown__loading,
+.search-dropdown__empty {
+  padding: 14px 10px;
+  color: rgba(220, 234, 250, 0.68) !important;
+  text-align: center;
+}
+
+.search-dropdown__highlight {
+  padding: 0 2px;
+  border-radius: 4px;
+  background: rgba(56, 161, 255, 0.22) !important;
+  color: #dcedff !important;
+  font-weight: var(--ps5-fw-bold);
+}
+
+
+/* ==========================================================================
+   12 · BOTONES
+   ========================================================================== */
+button, [role="button"] {
+  border-radius: var(--ps5-radius-pill);
+  font-weight: var(--ps5-fw-semibold);
+  transition:
+    transform var(--ps5-dur) var(--ps5-ease),
+    background var(--ps5-dur-fast) ease,
+    border-color var(--ps5-dur-fast) ease,
+    box-shadow var(--ps5-dur) var(--ps5-ease),
+    color var(--ps5-dur-fast) ease;
+}
+
+.button {
+  background: var(--ps5-surface-dark) !important;
+  color: var(--ps5-text) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  min-height: 40px;
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+.button:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: var(--ps5-border-strong) !important;
+  transform: scale(1.04);
+}
+
+.button:active { transform: scale(0.97) !important; }
+
+.button.button--primary,
+.button--primary {
+  background: var(--ps5-white) !important;
+  color: var(--ps5-text-on-light) !important;
+  border: 0 !important;
+  font-weight: var(--ps5-fw-black) !important;
+  min-height: 42px;
+  box-shadow: var(--ps5-shadow-button) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.button.button--primary:hover,
+.button--primary:hover {
+  background: #ffffff !important;
+  transform: scale(1.06);
+  box-shadow: var(--ps5-shadow-button-hover) !important;
+}
+
+.button--primary *, .button--primary svg { color: var(--ps5-text-on-light) !important; fill: currentColor; }
+
+.button.button--danger,
+.button--danger {
+  background: var(--ps5-danger-soft) !important;
+  color: var(--ps5-danger) !important;
+  border: 1px solid rgba(255, 90, 110, 0.42) !important;
+}
+
+.button.button--danger:hover,
+.button--danger:hover {
+  background: var(--ps5-danger) !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 34px rgba(255, 90, 110, 0.45) !important;
+}
+
+.button:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: none !important;
+  box-shadow: var(--ps5-focus-ring) !important;
+}
+
+button:disabled,
+.button[disabled],
+[aria-disabled="true"] {
+  opacity: 0.42 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+:is(button, [role="button"])[class*="close"],
+:is(button, [role="button"])[class*="icon-button"] {
+  border-radius: 50% !important;
+  aspect-ratio: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* ==========================================================================
+   13 · CAMPOS DE TEXTO, SELECTS Y CONTROLES
+   ========================================================================== */
+input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"], [type="submit"], [type="button"], [type="hidden"]):not([class*="text-field"] input):not([class*="search"] input),
+select {
+  background: var(--ps5-surface-dark) !important;
+  color: var(--ps5-text) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  padding-inline: 20px;
+  min-height: 42px;
+  outline: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  transition: border-color var(--ps5-dur) var(--ps5-ease), box-shadow var(--ps5-dur) var(--ps5-ease), background var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"], [type="submit"], [type="button"], [type="hidden"]):not([class*="text-field"] input):not([class*="search"] input):hover,
+select:hover { border-color: var(--ps5-border-strong) !important; }
+
+input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"], [type="submit"], [type="button"], [type="hidden"]):not([class*="text-field"] input):not([class*="search"] input):focus,
+select:focus {
+  background: rgba(8, 18, 44, 0.85) !important;
+  border-color: var(--ps5-blue-light) !important;
+  box-shadow: var(--ps5-field-focus) !important;
+}
+
+textarea {
+  background: var(--ps5-surface-dark) !important;
+  color: var(--ps5-text) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: 24px !important;
+  padding: 14px 20px;
+  outline: none !important;
+  resize: vertical;
+}
+
+textarea:focus { border-color: var(--ps5-blue-light) !important; box-shadow: var(--ps5-field-focus) !important; }
+
+.text-field,
+[class*="text-field--"] {
+  background: var(--ps5-surface-dark) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  transition: border-color var(--ps5-dur) var(--ps5-ease), box-shadow var(--ps5-dur) var(--ps5-ease), background var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+.text-field:hover, [class*="text-field--"]:hover { border-color: var(--ps5-border-strong) !important; }
+
+.text-field:is(:focus-within, [class*="--focused"]),
+[class*="text-field--"]:is(:focus-within, [class*="--focused"]) {
+  background: rgba(8, 18, 44, 0.85) !important;
+  border-color: var(--ps5-blue-light) !important;
+  box-shadow: var(--ps5-field-focus) !important;
+}
+
+[class*="text-field"] input {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: var(--ps5-text) !important;
+}
+
+option, optgroup { background: var(--ps5-navy) !important; color: var(--ps5-text) !important; }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ps5-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--ps5-navy) inset !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+input { caret-color: var(--ps5-blue-light); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--ps5-blue); cursor: pointer; }
+
+[role="switch"], [class*="switch"]:not([class*="__"]) { border-radius: var(--ps5-radius-pill) !important; }
+
+[role="switch"][aria-checked="true"],
+[class*="switch"][class*="--checked"] {
+  background: var(--ps5-blue) !important;
+  box-shadow: 0 0 18px var(--ps5-blue-glow) !important;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: var(--ps5-radius-pill);
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(56, 161, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+progress {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border: 0;
+  border-radius: var(--ps5-radius-pill);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+progress::-webkit-progress-bar { background: rgba(255, 255, 255, 0.12); border-radius: var(--ps5-radius-pill); }
+progress::-webkit-progress-value {
+  background: linear-gradient(90deg, var(--ps5-blue), var(--ps5-blue-light) 70%, #fff);
+  border-radius: var(--ps5-radius-pill);
+  box-shadow: 0 0 14px rgba(56, 161, 255, 0.75);
+}
+
+[role="progressbar"],
+[class*="progress-bar"]:not([class*="__"]) {
+  border-radius: var(--ps5-radius-pill) !important;
+  overflow: hidden !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+[role="progressbar"] > *,
+[class*="progress-bar"]:not([class*="__"]) > * {
+  background: linear-gradient(90deg, var(--ps5-blue), var(--ps5-blue-light) 70%, #fff) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  box-shadow: 0 0 14px rgba(56, 161, 255, 0.75);
+}
+
+
+/* ==========================================================================
+   14 · TARJETAS DE JUEGO · MARCO DE SELECCIÓN PS5
+   --------------------------------------------------------------------------
+   v5: "position: relative" ya no lleva !important y se quitó will-change.
+   Si Hydra posiciona las tarjetas de forma absoluta (listas virtualizadas),
+   ahora respeta ese posicionamiento en vez de pisarlo.
+   ========================================================================== */
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden !important;
+  border-radius: var(--ps5-radius-card) !important;
+  border: 0 !important;
+  background-color: var(--ps5-surface-2) !important;
+  box-shadow: var(--ps5-shadow-card), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  outline: none !important;
+  transition:
+    transform var(--ps5-dur) var(--ps5-ease),
+    box-shadow var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card) > * {
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card) * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card) img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: none !important;
+  border-radius: inherit;
+  transition: transform var(--ps5-dur-slow) var(--ps5-ease) !important;
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card) [class*="overlay"] {
+  background:
+    linear-gradient(to top, rgba(4, 8, 20, 0.90) 0%, rgba(4, 8, 20, 0.35) 28%, transparent 48%),
+    linear-gradient(to bottom, rgba(4, 8, 20, 0.50) 0%, transparent 24%) !important;
+  filter: none !important;
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card) :is([class*="playtime"], [class*="platform"], [class*="badge"]) {
+  background: rgba(4, 8, 20, 0.72) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  color: var(--ps5-text) !important;
+  font-weight: var(--ps5-fw-semibold);
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card) :is([class*="title"], h3, h4) {
+  color: var(--ps5-text) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.16) 48%, transparent 64%);
+  transform: translateX(-130%);
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card):is(:hover, :focus-visible, :focus-within) {
+  transform: scale(1.018) translateY(var(--ps5-hover-lift)) !important;
+  z-index: var(--ps5-z-card-focus) !important;
+  animation: none;
+  box-shadow:
+    0 0 0 3px var(--ps5-midnight),
+    0 0 0 6px rgba(255, 255, 255, 0.88),
+    0 0 24px rgba(56, 161, 255, 0.44),
+    0 24px 48px rgba(0, 0, 0, 0.58);
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card):is(:hover, :focus-visible, :focus-within)::after {
+  transform: translateX(130%);
+  transition: transform 0.9s var(--ps5-ease);
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card):is(:hover, :focus-visible, :focus-within) img {
+  transform: scale(1.035);
+  filter: saturate(1.12) brightness(1.05) !important;
+}
+
+:root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card):active {
+  transform: scale(0.995) !important;
+}
+
+
+/* ==========================================================================
+   15 · BIBLIOTECA
+   --------------------------------------------------------------------------
+   v5 · Por qué no se veía nada en la v4: el tema convertía el contenedor de
+   la biblioteca en una cuadrícula propia (display: grid + padding + overflow
+   + ancho de los hijos, todo con !important), y eso chocaba con el layout
+   de Hydra y dejaba la lista vacía.
+
+   Hydra conserva columnas, tamaños y virtualización; el tema viste la barra,
+   las tarjetas y sus estados sin interferir con colecciones ni arrastrar/soltar.
+   ========================================================================== */
+:root :is(.library-game-card__game-image, .library-game-card-large__animated-hero) {
+  object-position: center top;
+}
+
+:root .library__content {
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(0, 112, 209, 0.18), transparent 42%),
+    radial-gradient(ellipse at 88% 54%, rgba(56, 161, 255, 0.075), transparent 46%),
+    linear-gradient(180deg, rgba(4, 8, 20, 0.12), transparent 48%);
+}
+
+:root .library__toolbar {
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  background:
+    linear-gradient(110deg, rgba(22, 72, 145, 0.52), rgba(7, 18, 42, 0.88) 58%, rgba(15, 50, 104, 0.45)),
+    var(--ps5-glass) !important;
+  border: 1px solid rgba(147, 202, 255, 0.3) !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.32),
+    inset 0 1px rgba(255, 255, 255, 0.14),
+    0 0 26px rgba(0, 112, 209, 0.12) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+}
+
+:root .library__toolbar :is(button, [role="button"]) {
+  border-radius: 999px !important;
+  transition:
+    transform var(--ps5-dur) var(--ps5-ease),
+    background-color var(--ps5-dur) var(--ps5-ease),
+    border-color var(--ps5-dur) var(--ps5-ease),
+    box-shadow var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+:root .library-category-filter__container {
+  height: 42px;
+  gap: 3px;
+  padding: 3px;
+  background: rgba(3, 10, 25, 0.72) !important;
+  border: 1px solid rgba(172, 214, 255, 0.18) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08), 0 5px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+:root .library-category-filter__option {
+  gap: 8px;
+  padding: 0 15px !important;
+  color: rgba(226, 239, 255, 0.68) !important;
+  border: 1px solid transparent !important;
+  border-radius: 11px !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+}
+
+:root .library-category-filter__option:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.075) !important;
+}
+
+:root .library-category-filter__option--active {
+  color: #fff !important;
+  background: linear-gradient(135deg, rgba(56, 161, 255, 0.38), rgba(0, 83, 171, 0.48)) !important;
+  border-color: rgba(145, 207, 255, 0.48) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.18), 0 0 18px rgba(0, 112, 209, 0.25) !important;
+}
+
+:root .library-toolbar-menu__trigger {
+  min-height: 40px;
+  padding: 0 14px !important;
+  color: rgba(238, 247, 255, 0.9) !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)) !important;
+  border: 1px solid rgba(180, 218, 255, 0.2) !important;
+  border-radius: 13px !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08), 0 6px 16px rgba(0, 0, 0, 0.18) !important;
+}
+
+:root .library-toolbar-menu__trigger:is(:hover, :focus-visible, [data-state="open"]) {
+  color: #fff !important;
+  background: linear-gradient(145deg, rgba(56, 161, 255, 0.24), rgba(0, 71, 154, 0.25)) !important;
+  border-color: rgba(138, 202, 255, 0.55) !important;
+  box-shadow: 0 0 18px rgba(0, 112, 209, 0.2), inset 0 1px rgba(255, 255, 255, 0.14) !important;
+}
+
+:root .library-toolbar-menu__active-dot {
+  background: #65c5ff !important;
+  box-shadow: 0 0 0 3px rgba(56, 161, 255, 0.15), 0 0 12px rgba(56, 161, 255, 0.9) !important;
+}
+
+:root .library__actions {
+  gap: 9px;
+}
+
+:root .library__action {
+  min-height: 40px;
+  color: #f5faff !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)) !important;
+  border: 1px solid rgba(180, 218, 255, 0.22) !important;
+  border-radius: 13px !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08), 0 6px 16px rgba(0, 0, 0, 0.18) !important;
+}
+
+:root .library__action--icon {
+  width: 40px;
+  min-width: 40px;
+  padding: 0 !important;
+  color: #a9dcff !important;
+  background: rgba(7, 20, 43, 0.76) !important;
+}
+
+:root .library__action:not(.library__action--icon) {
+  padding: 0 16px !important;
+  color: #fff !important;
+  background: linear-gradient(135deg, #178cf2, #0755b8) !important;
+  border-color: rgba(153, 213, 255, 0.58) !important;
+  box-shadow: 0 7px 19px rgba(0, 91, 190, 0.3), inset 0 1px rgba(255, 255, 255, 0.2) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+}
+
+:root .library__action:is(:hover, :focus-visible) {
+  border-color: rgba(190, 228, 255, 0.68) !important;
+  box-shadow: 0 0 20px rgba(56, 161, 255, 0.3), 0 8px 18px rgba(0, 0, 0, 0.25) !important;
+}
+
+:root .library__quick-action {
+  color: var(--ps5-text-secondary) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(180, 218, 255, 0.14) !important;
+  border-radius: 11px !important;
+}
+
+:root .library__quick-action:hover {
+  color: #fff !important;
+  background: rgba(56, 161, 255, 0.18) !important;
+  border-color: rgba(138, 202, 255, 0.32) !important;
+}
+
+:root .library-toolbar-menu__content {
+  color: var(--ps5-text) !important;
+  background: linear-gradient(145deg, rgba(17, 39, 78, 0.98), rgba(5, 12, 27, 0.98)) !important;
+  border: 1px solid rgba(157, 208, 255, 0.26) !important;
+  border-radius: 17px !important;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.58), inset 0 1px rgba(255, 255, 255, 0.1) !important;
+  -webkit-backdrop-filter: blur(22px) !important;
+  backdrop-filter: blur(22px) !important;
+}
+
+:root .library-toolbar-menu__label {
+  color: rgba(174, 215, 255, 0.72) !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:root .library-toolbar-menu__separator {
+  background: rgba(160, 205, 255, 0.16) !important;
+}
+
+:root .library-toolbar-menu__item,
+:root .library-toolbar-menu__view {
+  color: rgba(238, 247, 255, 0.78) !important;
+  border-radius: 10px !important;
+}
+
+:root .library-toolbar-menu__item:is(:hover, :focus-visible, [data-highlighted]),
+:root .library-toolbar-menu__item[data-state="checked"],
+:root .library-toolbar-menu__view:is(:hover, :focus-visible, [data-highlighted]),
+:root .library-toolbar-menu__view[data-state="checked"] {
+  color: #fff !important;
+  background: linear-gradient(110deg, rgba(56, 161, 255, 0.2), rgba(56, 161, 255, 0.07)) !important;
+  border-color: rgba(129, 195, 255, 0.3) !important;
+}
+
+:root .library-toolbar-menu__item-indicator {
+  color: #83d2ff !important;
+  filter: drop-shadow(0 0 5px rgba(56, 161, 255, 0.55));
+}
+
+:root .library-toolbar-menu__item-count {
+  color: #a9dcff !important;
+  background: rgba(56, 161, 255, 0.12);
+  border: 1px solid rgba(126, 194, 255, 0.16);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+:root .library-toolbar-menu__switch-item {
+  color: rgba(238, 247, 255, 0.82) !important;
+  border-radius: 10px !important;
+}
+
+:root .library-toolbar-menu__switch {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border: 1px solid rgba(190, 225, 255, 0.18);
+}
+
+:root .library-toolbar-menu__switch::after {
+  background: #d7edff !important;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.48);
+}
+
+:root .library-toolbar-menu__switch-item[data-state="checked"] .library-toolbar-menu__switch {
+  background: linear-gradient(90deg, #0879e5, #46baff) !important;
+  border-color: rgba(154, 216, 255, 0.55);
+}
+
+:root .library-toolbar-menu__switch-item[data-state="checked"] .library-toolbar-menu__switch::after {
+  background: #fff !important;
+  box-shadow: 0 0 8px rgba(212, 243, 255, 0.52);
+}
+
+:root .library__scroll-shadow::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 12, 27, 0.62) 0%,
+    rgba(7, 22, 46, 0.28) 38%,
+    transparent 100%
+  ) !important;
+}
+
+:root .library__page-title,
+:root .library__header-title {
+  color: #f3f8ff !important;
+  text-shadow: 0 4px 20px rgba(0, 112, 209, 0.24);
+}
+
+:root .library__count {
+  background: linear-gradient(135deg, rgba(56, 161, 255, 0.14), rgba(255, 255, 255, 0.035)) !important;
+  border: 1px solid rgba(157, 208, 255, 0.2) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+:root .library__count-number {
+  color: #a9dcff !important;
+  font-weight: var(--ps5-fw-bold) !important;
+}
+
+:root .library__separator {
+  background: linear-gradient(90deg, rgba(56, 161, 255, 0.4), rgba(255, 255, 255, 0.06), transparent) !important;
+}
+
+:root :is(.library__icon-container, .library__telescope-icon) {
+  color: #a9dcff !important;
+  background: radial-gradient(circle at 35% 25%, rgba(56, 161, 255, 0.32), rgba(7, 22, 48, 0.82)) !important;
+  border: 1px solid rgba(157, 208, 255, 0.22) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), 0 0 24px rgba(0, 112, 209, 0.16) !important;
+}
+
+:root .library-game-card__cover-placeholder {
+  color: rgba(187, 223, 255, 0.72) !important;
+  background:
+    radial-gradient(circle at 35% 24%, rgba(56, 161, 255, 0.24), transparent 48%),
+    linear-gradient(145deg, #10274d, #050b18 74%) !important;
+}
+
+:root .library-game-card__wrapper,
+:root .library-game-card-large {
+  background-color: #071126 !important;
+  border: 1px solid rgba(155, 206, 255, 0.35) !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 15px 34px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(20, 81, 150, 0.2),
+    inset 0 1px rgba(255, 255, 255, 0.12) !important;
+  transition:
+    transform var(--ps5-dur) var(--ps5-ease),
+    border-color var(--ps5-dur) var(--ps5-ease),
+    box-shadow var(--ps5-dur) var(--ps5-ease),
+    filter var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+:root .library-game-card__wrapper {
+  border-radius: 18px !important;
+}
+
+:root .library-game-card__wrapper::before,
+:root .library-game-card-large::before {
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.68 !important;
+  transform: none !important;
+  background:
+    linear-gradient(135deg, rgba(211, 239, 255, 0.22), transparent 17%, transparent 75%, rgba(56, 161, 255, 0.16)),
+    linear-gradient(0deg, rgba(4, 8, 20, 0.12), transparent 35%) !important;
+  box-shadow: inset 0 0 0 1px rgba(218, 240, 255, 0.18), inset 0 0 24px rgba(0, 112, 209, 0.08);
+  transition: opacity var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+:root .library-game-card__wrapper:is(:hover, :focus-visible, :focus-within)::before,
+:root .library-game-card-large:is(:hover, :focus-visible, :focus-within)::before {
+  opacity: 1 !important;
+}
+
+:root .library-game-card__wrapper:is(:hover, :focus-visible, :focus-within),
+:root .library-game-card-large:is(:hover, :focus-visible, :focus-within) {
+  border-color: rgba(118, 198, 255, 0.92) !important;
+  box-shadow:
+    0 0 0 2px rgba(4, 8, 20, 0.94),
+    0 0 0 4px rgba(98, 187, 255, 0.86),
+    0 0 32px rgba(0, 132, 255, 0.48),
+    0 22px 46px rgba(0, 0, 0, 0.58) !important;
+}
+
+:root .library-game-card__wrapper .library-game-card__game-image {
+  filter: saturate(1.08) contrast(1.035) !important;
+}
+
+:root .library-game-card__wrapper:is(:hover, :focus-visible, :focus-within) .library-game-card__game-image {
+  filter: saturate(1.16) contrast(1.04) brightness(1.06) !important;
+}
+
+:root .library-game-card__wrapper .library-game-card__game-image--contain {
+  object-fit: contain !important;
+  background: #070d18 !important;
+}
+
+:root .library-game-card__wrapper .library-game-card__classics-backdrop {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover !important;
+  filter: blur(16px) saturate(1.1) !important;
+  transform: scale(1.25) !important;
+  opacity: 0.65;
+}
+
+:root .library-game-card__wrapper .library-game-card__classics-image {
+  width: auto !important;
+  height: auto !important;
+  max-width: 80% !important;
+  max-height: 80% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 5px !important;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.52) !important;
+  filter: none !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+:root .library-game-card__wrapper:is(:hover, :focus-visible, :focus-within) .library-game-card__classics-image {
+  transform: translate(-50%, -50%) scale(1.035) !important;
+}
+
+:root .library-game-card__wrapper .library-game-card__installed-emulator-icon,
+:root .library-game-card__wrapper .library-game-card__import-badges img {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  border-radius: 4px !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+:root .library-game-card-large:not(.library-game-card-large--classics) .library-game-card-large__background {
+  filter: saturate(1.07) contrast(1.025);
+}
+
+:root .library-game-card-large__animated-hero {
+  filter: saturate(1.07) contrast(1.025) !important;
+}
+
+:root .library-game-card__overlay:not(.library-game-card__overlay--classics):not(.library-game-card__overlay--no-fade) {
+  background: linear-gradient(
+    to top,
+    rgba(3, 8, 20, 0.98) 0%,
+    rgba(3, 8, 20, 0.78) 15%,
+    rgba(3, 8, 20, 0.32) 34%,
+    transparent 64%
+  ), linear-gradient(
+    to bottom,
+    rgba(3, 8, 20, 0.28) 0%,
+    transparent 30%
+  ) !important;
+}
+
+:root .library-game-card__playtime {
+  height: 25px !important;
+  padding: 0 8px !important;
+  color: #f2f9ff !important;
+  background: linear-gradient(135deg, rgba(5, 23, 48, 0.94), rgba(4, 9, 21, 0.84)) !important;
+  border: 1px solid rgba(137, 203, 255, 0.48) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.46), inset 0 1px rgba(255, 255, 255, 0.12) !important;
+  font-size: 10px !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+}
+
+:root .library-game-card__playtime svg {
+  color: #8ed3ff;
+}
+
+:root .library-game-card__installed-badge:not(.library-game-card__installed-badge--classics) {
+  color: #e8fff6 !important;
+  background: linear-gradient(135deg, rgba(8, 69, 61, 0.88), rgba(4, 25, 31, 0.9)) !important;
+  border: 1px solid rgba(110, 255, 206, 0.38) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.42), 0 0 12px rgba(36, 206, 160, 0.12) !important;
+}
+
+:root .library-game-card__installed-icon {
+  color: #86ffd3 !important;
+}
+
+:root .library-game-card__installed-badge--classics,
+:root .library-game-card-large__installed-badge--classics {
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  background:
+    linear-gradient(rgba(7, 16, 34, 0.94), rgba(7, 16, 34, 0.94)) padding-box,
+    linear-gradient(135deg, #f8c802, #fc5812 28%, #fb0026 52%, #c80078 76%, #7300a4) border-box !important;
+}
+
+:root .library-game-card__platform-badge {
+  color: #fff !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(rgba(7, 16, 34, 0.92), rgba(7, 16, 34, 0.92)) padding-box,
+    linear-gradient(135deg, #f8c802, #fc5812 28%, #fb0026 52%, #c80078 76%, #7300a4) border-box !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.38) !important;
+}
+
+:root .library-game-card__achievement-header {
+  margin-bottom: 6px !important;
+  color: rgba(228, 242, 255, 0.86) !important;
+  font-size: 10px !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+:root .library-game-card__achievement-trophy {
+  color: #ffd879 !important;
+  filter: drop-shadow(0 0 5px rgba(255, 190, 65, 0.5));
+}
+
+:root .library-game-card__achievement-progress {
+  height: 5px !important;
+  background: rgba(215, 234, 255, 0.22) !important;
+  border: 1px solid rgba(220, 240, 255, 0.14);
+  border-radius: 999px !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+:root .library-game-card__achievement-bar:not(.library-game-card__achievement-bar--platinum) {
+  background: linear-gradient(90deg, #0879e5, #39b8ff 72%, #a9eaff) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 0 10px rgba(36, 158, 255, 0.72);
+}
+
+:root .library-game-card__achievement-count,
+:root .library-game-card__achievement-percentage {
+  color: rgba(238, 247, 255, 0.92) !important;
+  font-size: 10px !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+}
+
+:root .library-game-card__achievement-percentage--completed {
+  color: #8fffd4 !important;
+}
+
+:root .library-game-card-large:not(.library-game-card-large--classics) .library-game-card-large__gradient {
+  background: linear-gradient(
+    0deg,
+    rgba(3, 8, 20, 0.92) 0%,
+    rgba(3, 8, 20, 0.58) 28%,
+    rgba(3, 8, 20, 0.12) 62%,
+    transparent 100%
+  ) !important;
+}
+
+:root .library-game-card-large__title {
+  color: #fff !important;
+  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.9) !important;
+}
+
+:root .library-game-card-large__size-badges {
+  background: rgba(4, 13, 30, 0.78) !important;
+  border: 1px solid rgba(153, 211, 255, 0.3) !important;
+  border-radius: 13px !important;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.34), inset 0 1px rgba(255, 255, 255, 0.08) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+:root .library-game-card-large__size-bar-line {
+  background: linear-gradient(90deg, #0879e5, #45c2ff) !important;
+  box-shadow: 0 0 10px rgba(56, 161, 255, 0.42);
+}
+
+:root .library-game-card-large__achievement-trophy {
+  color: #ffd879 !important;
+  filter: drop-shadow(0 0 5px rgba(255, 190, 65, 0.5));
+}
+
+:root .library-game-card-large__achievement-progress {
+  height: 6px !important;
+  background: rgba(215, 234, 255, 0.2) !important;
+  border-radius: 999px !important;
+}
+
+:root .library-game-card-large__achievement-bar:not(.library-game-card-large__achievement-bar--platinum) {
+  background: linear-gradient(90deg, #0879e5, #39b8ff 72%, #a9eaff) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 0 10px rgba(36, 158, 255, 0.62);
+}
+
+:root .library-game-card-large__achievement-count,
+:root .library-game-card-large__achievement-percentage {
+  color: rgba(238, 247, 255, 0.92) !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+:root .library-game-card-large__achievement-percentage--completed {
+  color: #8fffd4 !important;
+}
+
+:root .library-game-card-large__playtime,
+:root .library-game-card-large__installed-badge:not(.library-game-card-large__installed-badge--classics) {
+  color: #f3f9ff !important;
+  background: rgba(4, 13, 30, 0.82) !important;
+  border: 1px solid rgba(153, 211, 255, 0.38) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.42) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+:root .library-game-card__action-button {
+  color: #eff9ff !important;
+  background: linear-gradient(145deg, rgba(18, 83, 153, 0.92), rgba(4, 18, 41, 0.94)) !important;
+  border: 1px solid rgba(158, 216, 255, 0.55) !important;
+  border-radius: 13px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.48), inset 0 1px rgba(255, 255, 255, 0.16) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+:root .library-game-card__wrapper:focus-visible,
+:root .library-game-card-large:focus-visible {
+  outline: 2px solid #8ed3ff !important;
+  outline-offset: 3px;
+}
+
+:root .library-game-card__action-button:focus-visible,
+:root .library-game-card__wrapper:focus-within .library-game-card__action-button {
+  opacity: 1 !important;
+}
+
+:root :is(.library__empty, .library__no-games) {
+  color: var(--ps5-text-secondary) !important;
+}
+
+
+/* ==========================================================================
+   16 · DESCARGAS
+   --------------------------------------------------------------------------
+   Las acciones y el progreso siguen siendo nativos; las filas simples
+   completadas/encoladas reciben una superficie de vidrio propia.
+   ========================================================================== */
+.download-group:not(.download-group--hero) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border-radius: 0 !important;
+  padding: 8px 20px 24px !important;
+}
+
+:root .download-group__simple-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(100%, 1160px);
+  margin: 0 auto !important;
+  padding: 0 !important;
+  list-style: none;
+}
+
+:root .download-group__simple-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 12px 14px !important;
+  background:
+    linear-gradient(120deg, rgba(56, 161, 255, 0.08), transparent 46%),
+    var(--ps5-glass) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: 22px !important;
+  box-shadow: var(--ps5-shadow-panel) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  transition:
+    border-color var(--ps5-dur) var(--ps5-ease),
+    box-shadow var(--ps5-dur) var(--ps5-ease),
+    background-color var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+:root .download-group__simple-card:is(:hover, :focus-within) {
+  border-color: rgba(91, 174, 255, 0.56) !important;
+  box-shadow:
+    0 0 0 2px rgba(4, 8, 20, 0.9),
+    0 0 0 4px rgba(255, 255, 255, 0.62),
+    0 0 24px rgba(56, 161, 255, 0.26),
+    0 18px 38px rgba(0, 0, 0, 0.42) !important;
+}
+
+:root .download-group__simple-thumbnail {
+  flex: 0 0 clamp(104px, 13vw, 176px);
+  width: clamp(104px, 13vw, 176px);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  padding: 0 !important;
+  background: #071126 !important;
+  border: 1px solid rgba(190, 225, 255, 0.2) !important;
+  border-radius: 15px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.38) !important;
+}
+
+:root .download-group__simple-thumbnail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform var(--ps5-dur-slow) var(--ps5-ease);
+}
+
+:root .download-group__simple-card:hover .download-group__simple-thumbnail img {
+  transform: scale(1.04);
+}
+
+:root .download-group__simple-info {
+  flex: 0 1 auto;
+  max-width: 520px;
+  min-width: 0;
+  gap: 7px;
+}
+
+:root .download-group__simple-info :is(h1, h2, h3, h4, [class*="title"]) {
+  color: var(--ps5-text) !important;
+  font-size: var(--ps5-fs-md) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+  letter-spacing: -0.015em;
+}
+
+:root .download-group__simple-info :is(p, small, [class*="detail"], [class*="meta"]) {
+  color: var(--ps5-text-secondary) !important;
+}
+
+:root .download-group__simple-progress {
+  overflow: hidden;
+  border-radius: 999px !important;
+}
+
+:root .download-group__simple-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+:root .download-group__simple-action-btn,
+:root .download-group__simple-menu-btn {
+  min-height: 40px;
+  border: 1px solid rgba(190, 225, 255, 0.26) !important;
+  border-radius: 12px !important;
+  transition:
+    background-color var(--ps5-dur) var(--ps5-ease),
+    border-color var(--ps5-dur) var(--ps5-ease),
+    box-shadow var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+:root .download-group__simple-action-btn {
+  color: #fff !important;
+  background: linear-gradient(135deg, #1788ef, #0755b8) !important;
+  box-shadow: 0 6px 18px rgba(0, 112, 209, 0.3) !important;
+}
+
+:root .download-group__simple-menu-btn {
+  color: var(--ps5-text-secondary) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+
+:root :is(.download-group__simple-action-btn, .download-group__simple-menu-btn):is(:hover, :focus-visible) {
+  border-color: rgba(190, 225, 255, 0.58) !important;
+  box-shadow: 0 0 18px rgba(56, 161, 255, 0.24) !important;
+}
+
+[class*="download-group__header"] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px !important;
+}
+
+[class*="download-group__header"] :is(h1, h2, h3, h4, [class*="title"]) {
+  font-size: var(--ps5-fs-xl) !important;
+  font-weight: var(--ps5-fw-black) !important;
+  letter-spacing: -0.03em !important;
+}
+
+/* Fila de cada descarga */
+:is(
+  [class*="download-group__item"]:not([class*="__item-"]),
+  [class*="download-group__downloads"] > li,
+  [class*="download-group__downloads"] > div
+) {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+  padding: 12px 20px 12px 12px !important;
+  margin-bottom: 14px !important;
+  background: var(--ps5-glass) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: 24px !important;
+  box-shadow: var(--ps5-shadow-panel) !important;
+  transition:
+    transform var(--ps5-dur) var(--ps5-ease),
+    box-shadow var(--ps5-dur) var(--ps5-ease),
+    border-color var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+:is(
+  [class*="download-group__item"]:not([class*="__item-"]),
+  [class*="download-group__downloads"] > li,
+  [class*="download-group__downloads"] > div
+):hover {
+  transform: translateY(-2px) scale(1.01);
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 0 0 3px var(--ps5-midnight), 0 0 0 5px rgba(255, 255, 255, 0.85), 0 0 36px 6px rgba(56, 161, 255, 0.38), 0 22px 48px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Contenedor de la portada (el ÚNICO con marco) */
+:root :is([class*="download-group__cover"]):not([class*="__cover-"], [class*="__cover_"]) {
+  position: relative !important;
+  flex: 0 0 var(--ps5-dl-cover-w) !important;
+  width: var(--ps5-dl-cover-w) !important;
+  min-width: var(--ps5-dl-cover-w);
+  height: auto !important;
+  max-height: none !important;
+  aspect-ratio: var(--ps5-dl-cover-ratio) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  object-fit: cover;
+  object-position: center top;
+  background: var(--ps5-navy) !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Piezas internas: sin marco, sin sombra, sin radio propio */
+:root [class*="download-group__cover-"] {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* La imagen llena la portada completa */
+:root [class*="download-group__cover"] :is(img, picture) {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+  border-radius: 0 !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+/* Degradado suave encima de la imagen */
+:root [class*="download-group__cover-backdrop"] {
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(to top, rgba(4, 8, 20, 0.72) 0%, rgba(4, 8, 20, 0.12) 45%, transparent 70%) !important;
+}
+
+:root [class*="download-group__cover-content"] {
+  background: transparent !important;
+}
+
+/* Textos y acciones */
+:is([class*="download-group__right-content"], [class*="download-group__info"]) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[class*="download-group__title"] {
+  font-size: var(--ps5-fs-lg) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+  letter-spacing: -0.02em !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+[class*="download-group__details"] { color: var(--ps5-text-secondary) !important; }
+
+[class*="download-group"] :is(progress, [role="progressbar"], [class*="progress-bar"]) { height: 6px; }
+
+
+.catalogue__content {
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 300px) !important;
+  align-items: start;
+  gap: clamp(16px, 2vw, 28px) !important;
+}
+
+.catalogue__games-container:not(.catalogue__games-container--classics) {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ps5-catalog-min)), 1fr)) !important;
+  align-content: start;
+  align-items: stretch;
+  gap: 20px !important;
+  padding: 18px 4px 36px !important;
+  list-style: none;
+}
+
+.catalogue__games-container:not(.catalogue__games-container--classics) > :is(
+  .catalogue__pagination-container,
+  .catalogue__result-count
+) {
+  grid-column: 1 / -1;
+}
+
+.catalogue__games-container .game-item {
+  position: relative;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0;
+  overflow: hidden !important;
+  text-align: left;
+  background: var(--ps5-glass) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--ps5-shadow-card) !important;
+  transition:
+    transform var(--ps5-dur) var(--ps5-ease),
+    border-color var(--ps5-dur) ease,
+    box-shadow var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+.catalogue__games-container .game-item:is(:hover, :focus-within) {
+  transform: translateY(-2px) !important;
+  border-color: rgba(91, 174, 255, 0.48) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48), 0 0 24px rgba(0, 112, 209, 0.16) !important;
+  z-index: var(--ps5-z-card-focus);
+}
+
+.game-item__content-link {
+  display: flex !important;
+  flex: 1 1 auto;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.game-item__cover-wrapper {
+  position: relative;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0;
+  aspect-ratio: auto !important;
+  overflow: hidden;
+  background: transparent;
+}
+
+.game-item__cover-wrapper .game-item__cover,
+.catalogue__games-container .game-item__cover-wrapper img {
+  position: relative !important;
+  inset: auto !important;
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-width: none;
+  object-fit: contain !important;
+  object-position: center center;
+  filter: none !important;
+  transition: transform var(--ps5-dur-slow) var(--ps5-ease) !important;
+}
+
+.catalogue__games-container .game-item:is(:hover, :focus-within) .game-item__cover {
+  transform: scale(1.035);
+}
+
+.game-item__details {
+  display: flex;
+  flex: 1 1 auto !important;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  gap: 7px;
+  padding: 16px 18px 18px;
+}
+
+.game-item__title {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  font-size: var(--ps5-fs-md) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.3;
+}
+
+.game-item__genres {
+  color: var(--ps5-text-muted) !important;
+  font-size: var(--ps5-fs-sm) !important;
+  overflow-wrap: anywhere;
+}
+
+.game-item__repackers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 58px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.game-item__repackers > * {
+  padding: 3px 10px !important;
+  border: 1px solid var(--ps5-border-soft) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  background: var(--ps5-surface-3) !important;
+  font-size: 0.6875rem !important;
+}
+
+.catalogue__filters-container {
+  min-width: 0;
+}
+
+.catalogue__filters-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.catalogue__filters-container .filter-section {
+  background: var(--ps5-glass) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-panel) !important;
+  box-shadow: var(--ps5-shadow-panel) !important;
+  overflow: hidden;
+}
+
+
+/* ==========================================================================
+   18 · INICIO · ESTILO PANTALLA DE INICIO DE LA PS5
+   --------------------------------------------------------------------------
+   18.1 Banner a sangre con degradado hacia el fondo
+   18.2 Botón blanco "Ver juego"
+   18.3 Títulos de sección
+   18.4 Colección de juegos en cuadrícula adaptable, limitada a Inicio.
+   ========================================================================== */
+
+/* 18.1 · Banner destacado de Inicio */
+.home__header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 28px !important;
+  background: linear-gradient(180deg, rgba(4, 8, 20, 0.88), rgba(4, 8, 20, 0.56)) !important;
+  -webkit-backdrop-filter: var(--ps5-blur);
+  backdrop-filter: var(--ps5-blur);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.home__content > .hero {
+  position: relative !important;
+  isolation: isolate;
+  align-self: center;
+  width: calc(100% - clamp(32px, 6vw, 88px)) !important;
+  max-width: 1180px !important;
+  height: clamp(340px, 50vh, 480px) !important;
+  min-height: 340px !important;
+  margin: clamp(18px, 2.4vw, 32px) auto 0 !important;
+  border: 0 !important;
+  border-radius: 28px !important;
+  overflow: hidden !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.10),
+    0 34px 90px rgba(0, 0, 0, 0.56) !important;
+  transition: box-shadow var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+.home__buttons-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px !important;
+  min-width: 0;
+}
+
+.home__buttons-list :is(button, [role="button"]),
+.home__header > :is(button, [role="button"]) {
+  min-height: 42px;
+  border-radius: var(--ps5-radius-pill) !important;
+}
+
+.home__header > :is(button, [role="button"]) {
+  margin-left: auto;
+}
+
+.home__content > .hero::before {
+  content: "PS5 EXPERIENCE  ·  DESTACADO";
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  z-index: 3;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--ps5-radius-pill);
+  background: linear-gradient(110deg, rgba(0, 112, 209, 0.82), rgba(11, 25, 55, 0.74));
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--ps5-fw-bold);
+  letter-spacing: 0.12em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+}
+
+.home__content > .hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(4, 8, 20, 0.70) 0%, rgba(4, 8, 20, 0.30) 38%, transparent 74%),
+    linear-gradient(to top, rgba(4, 8, 20, 0.88) 0%, rgba(4, 8, 20, 0.28) 32%, transparent 70%);
+}
+
+.home__content > .hero .hero__backdrop { position: relative; }
+.home__content > .hero .hero__media {
+  z-index: 0 !important;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover !important;
+  object-position: center 50% !important;
+  filter: saturate(1.08) contrast(1.04);
+  transform: scale(1.18);
+  transition: transform var(--ps5-dur-slow) var(--ps5-ease), filter var(--ps5-dur-slow) var(--ps5-ease);
+}
+
+.home__content > .hero:is(:hover, :focus-visible) .hero__media {
+  transform: scale(1.24);
+}
+
+.home__content > .hero :is(h1, h2) {
+  font-weight: var(--ps5-fw-black) !important;
+  letter-spacing: -0.03em !important;
+  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.6);
+}
+
+.home__content > .hero .hero__content {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 680px;
+  padding-left: clamp(48px, 4vw, 64px) !important;
+  padding-right: clamp(20px, 3vw, 40px) !important;
+}
+
+.home__content > .hero .hero__logo {
+  width: min(340px, 100%);
+  max-height: 140px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.82));
+}
+
+.home__content > .hero .hero__description {
+  max-width: 100%;
+  min-width: 0;
+  color: rgba(255, 255, 255, 0.90) !important;
+  font-size: var(--ps5-fs-lg) !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.96);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 18.2 · Botón "Ver juego" (decorativo) */
+.home__content > .hero .hero__content::after {
+  content: "JUGAR AHORA  ›";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  min-height: 50px;
+  padding: 0 40px;
+  border-radius: var(--ps5-radius-pill);
+  background: #ffffff;
+  color: var(--ps5-text-on-light);
+  font-size: var(--ps5-fs-md);
+  font-weight: var(--ps5-fw-black);
+  letter-spacing: -0.01em;
+  box-shadow: var(--ps5-shadow-button);
+  transition: transform var(--ps5-dur) var(--ps5-ease), box-shadow var(--ps5-dur) var(--ps5-ease);
+}
+
+:root .home__content > .hero:is(:hover, :focus-visible) {
+  transform: none !important;
+}
+
+.home__content > .hero:is(:hover, :focus-visible) .hero__content::after {
+  transform: none;
+  box-shadow: var(--ps5-shadow-button-hover);
+}
+
+.home__content > .hero:focus-visible { box-shadow: var(--ps5-focus-ring) !important; }
+
+/* 18.3 · Títulos de sección */
+[class*="home__"] :is(h1, h2, h3):not([class~="hero"] *) {
+  font-size: 1.75rem !important;
+  font-weight: var(--ps5-fw-black) !important;
+  letter-spacing: -0.03em !important;
+}
+
+.home__content {
+  position: relative;
+  background:
+    radial-gradient(ellipse 76% 34% at 82% 88%, rgba(0, 112, 209, 0.16), transparent 72%),
+    linear-gradient(180deg, transparent 48%, rgba(4, 8, 20, 0.22)) !important;
+}
+
+.home__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 0;
+}
+
+/* 18.4 · Juegos en mosaico adaptable */
+.home__cards {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)) !important;
+  align-items: stretch;
+  gap: clamp(18px, 2vw, 26px) !important;
+  padding: 22px 28px 52px !important;
+}
+
+.home__cards > .game-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: auto;
+  display: flex !important;
+  flex-direction: column !important;
+  align-self: stretch;
+  max-width: none !important;
+  background: linear-gradient(160deg, rgba(17, 34, 69, 0.96), rgba(5, 11, 25, 0.98)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38) !important;
+  transition: transform var(--ps5-dur) var(--ps5-ease), box-shadow var(--ps5-dur) var(--ps5-ease) !important;
+}
+
+.home__cards > .game-card:first-child {
+  border-color: rgba(56, 161, 255, 0.54) !important;
+  box-shadow:
+    0 0 0 1px rgba(56, 161, 255, 0.4),
+    0 0 26px rgba(56, 161, 255, 0.2),
+    0 14px 34px rgba(0, 0, 0, 0.42) !important;
+}
+
+:root .home__cards > .game-card:is(:hover, :focus-visible) {
+  transform: translateY(-1px) scale(1.008) !important;
+  z-index: 2 !important;
+  animation: none !important;
+  box-shadow:
+    0 0 0 1px rgba(133, 201, 255, 0.78),
+    0 0 22px rgba(56, 161, 255, 0.24),
+    0 18px 34px rgba(0, 0, 0, 0.46) !important;
+}
+
+.home__cards > .game-card .game-card__backdrop {
+  display: flex !important;
+  flex: 1 1 auto;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  height: auto !important;
+  background: transparent !important;
+}
+
+.home__cards > .game-card .game-card__cover {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 0 !important;
+  display: block;
+  flex: 0 0 auto;
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  object-fit: cover !important;
+  object-position: center center !important;
+  border-radius: 19px 19px 0 0 !important;
+}
+
+.home__cards > .game-card .game-card__content {
+  flex: 1 1 auto;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding: 14px 16px 16px !important;
+  opacity: 1;
+  transform: none !important;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(56, 161, 255, 0.12), transparent 58%),
+    linear-gradient(160deg, rgba(17, 34, 69, 0.9), rgba(5, 11, 25, 0.96));
+  transition: background var(--ps5-dur-fast) ease !important;
+}
+
+.home__cards > .game-card::after { display: none !important; }
+
+.home__cards > .game-card .game-card__title-container {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  gap: 9px;
+}
+
+.home__cards > .game-card .game-card__title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 16px !important;
+  font-weight: var(--ps5-fw-bold) !important;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home__cards > .game-card .game-card__cover {
+  filter: saturate(1.05);
+}
+
+:root .home__cards > .game-card:is(:hover, :focus-visible) :is(.game-card__cover, .game-card__cover img) {
+  transform: scale(1.02) !important;
+  filter: saturate(1.08) brightness(1.02) !important;
+}
+
+.home__cards > .game-card .game-card__shop-icon { width: 16px; height: 16px; min-width: 16px; }
+.home__cards > .game-card .game-card__download-options { gap: 6px !important; }
+.home__cards > .game-card .game-card__download-options [class*="badge"] {
+  padding: 5px 9px !important;
+  font-size: 11px !important;
+}
+
+.home__cards > .game-card .game-card__specifics {
+  display: none !important;
+}
+
+/* ==========================================================================
+   19 · PERFIL · ESTILO PERFIL PS5
+   ========================================================================== */
+
+/* Cabecera: selectores exactos del componente ProfileHero de Hydra. */
+.profile-hero__content-box {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 66% 120% at 12% 0%, rgba(0, 112, 209, 0.46), transparent 70%),
+    radial-gradient(ellipse 52% 110% at 92% 0%, rgba(56, 161, 255, 0.22), transparent 72%),
+    linear-gradient(145deg, #10234a 0%, #09152d 54%, #060c1b 100%) !important;
+}
+
+.profile-hero__content-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.12), transparent 28% 72%, rgba(255, 255, 255, 0.035)),
+    linear-gradient(0deg, rgba(3, 8, 19, 0.64), transparent 75%);
+}
+
+.profile-hero__background-image {
+  inset: 0;
+  z-index: -1;
+  filter: saturate(1.12) brightness(0.78);
+}
+
+.profile-hero__background-overlay {
+  position: relative;
+  z-index: 1;
+  height: auto !important;
+  min-height: 0;
+  background: linear-gradient(90deg, rgba(5, 12, 27, 0.48), rgba(5, 12, 27, 0.08) 72%, rgba(5, 12, 27, 0.24)) !important;
+}
+
+.profile-hero__user-information {
+  min-height: 204px;
+  padding: clamp(30px, 5vw, 58px) clamp(22px, 4vw, 54px) !important;
+  gap: clamp(18px, 2.2vw, 30px) !important;
+}
+
+.profile-hero__avatar-button {
+  width: 112px !important;
+  min-width: 112px !important;
+  height: 112px !important;
+  padding: 5px !important;
+  border: 1px solid rgba(220, 240, 255, 0.75) !important;
+  border-radius: 50% !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.36), rgba(56, 161, 255, 0.48)) !important;
+  box-shadow:
+    0 0 0 5px rgba(4, 12, 28, 0.72),
+    0 12px 36px rgba(0, 0, 0, 0.48),
+    0 0 34px rgba(56, 161, 255, 0.42) !important;
+}
+
+.profile-hero__avatar-button img,
+.profile-hero__avatar-button [class*="avatar"] {
+  width: 100%;
+  height: 100%;
+  border-radius: 50% !important;
+  object-fit: cover;
+  box-shadow: none !important;
+}
+
+.profile-hero__information {
+  min-width: 0;
+  gap: 9px !important;
+  color: var(--ps5-text-secondary) !important;
+}
+
+.profile-hero__display-name {
+  color: var(--ps5-text) !important;
+  font-size: clamp(1.7rem, 3.2vw, 2.55rem) !important;
+  font-weight: var(--ps5-fw-black) !important;
+  letter-spacing: -0.045em !important;
+  line-height: 1.12;
+  text-shadow: 0 5px 28px rgba(0, 0, 0, 0.64) !important;
+}
+
+.profile-hero__copy-button {
+  min-height: 32px;
+  padding: 6px 11px !important;
+  border: 1px solid rgba(200, 230, 255, 0.18) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  background: rgba(5, 16, 36, 0.54) !important;
+  color: var(--ps5-text-secondary) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+
+.profile-hero__copy-button:hover {
+  border-color: rgba(170, 215, 255, 0.44) !important;
+  background: rgba(34, 105, 179, 0.42) !important;
+  color: var(--ps5-text) !important;
+}
+
+.profile-hero__friend-code {
+  color: var(--ps5-text-secondary);
+  font-size: var(--ps5-fs-sm) !important;
+  letter-spacing: 0.035em;
+}
+
+.profile-hero__gift-action {
+  top: 18px !important;
+  right: clamp(18px, 3vw, 38px) !important;
+}
+
+.profile-hero__gift-action :is(button, [role="button"]) {
+  border: 1px solid rgba(200, 230, 255, 0.22) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  background: rgba(5, 16, 36, 0.46) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+}
+
+.profile-hero__hero-panel {
+  position: relative;
+  z-index: 2;
+  width: auto !important;
+  min-height: 68px !important;
+  height: auto !important;
+  margin: 0 clamp(14px, 2.5vw, 32px) 20px !important;
+  padding: 10px clamp(14px, 2vw, 24px) !important;
+  align-items: center;
+  border: 1px solid rgba(170, 215, 255, 0.24) !important;
+  border-radius: 20px !important;
+  background:
+    linear-gradient(120deg, rgba(56, 161, 255, 0.20), rgba(17, 47, 91, 0.24) 52%, rgba(255, 255, 255, 0.07)),
+    rgba(5, 15, 34, 0.52) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(175%) !important;
+  backdrop-filter: blur(28px) saturate(175%) !important;
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.19),
+    0 0 24px rgba(56, 161, 255, 0.12) !important;
+}
+
+.profile-hero__actions {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px !important;
+}
+
+.profile-hero__actions :is(button, a, [role="button"]):not([class*="danger"]) {
+  min-height: 40px;
+  padding-inline: 16px;
+  border: 1px solid rgba(196, 226, 255, 0.24) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: var(--ps5-text) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.profile-hero__actions :is(button, a, [role="button"]):not([class*="danger"]):hover {
+  border-color: rgba(170, 215, 255, 0.52) !important;
+  background: rgba(56, 161, 255, 0.24) !important;
+}
+
+.profile-hero__actions :is(button, a, [role="button"])[class*="danger"] {
+  border: 1px solid rgba(255, 120, 139, 0.3) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  background: rgba(255, 90, 110, 0.13) !important;
+  color: #ffdce1 !important;
+}
+
+/* Superficie principal: más opaca para evitar manchas de fondo tras el contenido. */
+.profile-content__section {
+  align-items: flex-start;
+  gap: clamp(16px, 2.4vw, 32px) !important;
+  padding: clamp(18px, 2.6vw, 36px) !important;
+  background:
+    radial-gradient(ellipse 58% 36% at 12% 0%, rgba(36, 111, 190, 0.12), transparent 74%),
+    linear-gradient(155deg, rgba(12, 26, 51, 0.94), rgba(6, 13, 27, 0.96)) !important;
+  -webkit-backdrop-filter: var(--ps5-blur-soft) !important;
+  backdrop-filter: var(--ps5-blur-soft) !important;
+  border: 1px solid rgba(170, 215, 255, 0.15) !important;
+  border-radius: 30px 30px 0 0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+.profile-content__main {
+  min-width: 0;
+}
+
+.profile-content__games-grid {
+  gap: clamp(12px, 1.4vw, 18px) !important;
+}
+
+.profile-content__right-content {
+  width: clamp(270px, 27vw, 350px) !important;
+  gap: 16px !important;
+}
+
+.profile-content__section-header {
+  min-height: 34px;
+  margin-bottom: 16px !important;
+  gap: 10px !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+.profile-content__section-title-group {
+  gap: 11px !important;
+}
+
+.profile-content__section-header :is(h2, h3),
+.profile-content__section-title-group :is(h2, h3) {
+  margin: 0;
+  color: var(--ps5-text) !important;
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem) !important;
+  font-weight: var(--ps5-fw-black) !important;
+  letter-spacing: -0.035em !important;
+}
+
+.profile-content__section-badge,
+.profile-content__tab-badge {
+  border: 1px solid rgba(170, 215, 255, 0.18);
+  border-radius: var(--ps5-radius-pill) !important;
+  background: rgba(56, 161, 255, 0.14) !important;
+  color: #d7edff !important;
+}
+
+.profile-content__collapse-button {
+  border-radius: 10px !important;
+}
+
+/* Pestañas y filtros de la biblioteca. */
+.profile-content__tabs {
+  gap: 6px !important;
+  margin-bottom: 20px !important;
+  border-bottom: 1px solid rgba(170, 215, 255, 0.14) !important;
+}
+
+.profile-content__tab {
+  position: relative;
+  min-height: 42px;
+  padding: 9px 15px !important;
+  border: 1px solid transparent !important;
+  border-radius: 13px 13px 0 0 !important;
+  background: transparent !important;
+  color: var(--ps5-text-secondary) !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+  transition: color var(--ps5-dur-fast) ease, background var(--ps5-dur-fast) ease !important;
+}
+
+.profile-content__tab:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: var(--ps5-text) !important;
+}
+
+.profile-content__tab--active {
+  background: linear-gradient(180deg, rgba(56, 161, 255, 0.18), rgba(56, 161, 255, 0.04)) !important;
+  color: #ffffff !important;
+}
+
+.profile-content__tab-underline {
+  height: 3px !important;
+  border-radius: var(--ps5-radius-pill);
+  background: linear-gradient(90deg, #38a1ff, #d6efff) !important;
+  box-shadow: 0 0 16px rgba(56, 161, 255, 0.66);
+}
+
+.profile-content__library-filters {
+  gap: 9px !important;
+  margin-bottom: 18px !important;
+}
+
+.profile-content__library-filters :is(button, [role="button"], [role="combobox"]) {
+  min-height: 38px;
+  border: 1px solid rgba(170, 215, 255, 0.18) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  background: rgba(7, 18, 38, 0.68) !important;
+  color: var(--ps5-text-secondary) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+}
+
+/* Tarjetas del rail lateral, estadísticas, insignias y actividad reciente. */
+.profile-section {
+  overflow: hidden;
+  border: 1px solid rgba(170, 215, 255, 0.16) !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.025) 55%),
+    rgba(8, 19, 39, 0.70) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(165%) !important;
+  backdrop-filter: blur(24px) saturate(165%) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.profile-section__header {
+  padding: 16px 18px 12px !important;
+  border-bottom: 1px solid rgba(170, 215, 255, 0.12) !important;
+  background: transparent !important;
+}
+
+.profile-section__content {
+  padding: 14px !important;
+  background: transparent !important;
+}
+
+.profile-section__button {
+  border-radius: 10px !important;
+  color: var(--ps5-text-secondary) !important;
+}
+
+.profile-section__button:hover {
+  background: rgba(56, 161, 255, 0.12) !important;
+  color: var(--ps5-text) !important;
+}
+
+.profile-section__count {
+  border-radius: var(--ps5-radius-pill) !important;
+  background: rgba(56, 161, 255, 0.16) !important;
+  color: #d7edff !important;
+}
+
+.user-stats__box,
+.badges-box__box,
+.recent-games__box {
+  padding: 16px !important;
+  background: transparent !important;
+}
+
+.user-stats__list-item {
+  border-radius: 11px !important;
+  transition: background var(--ps5-dur-fast) ease;
+}
+
+.user-stats__list-item:hover,
+.badges-box__item:hover,
+.recent-games__list-item:hover {
+  background: rgba(56, 161, 255, 0.12) !important;
+}
+
+.user-stats__list-title {
+  color: var(--ps5-text-muted) !important;
+}
+
+.user-stats__list-description,
+.user-stats__stats-row {
+  color: var(--ps5-text-secondary) !important;
+}
+
+.badges-box__list,
+.recent-games__list {
+  gap: 9px !important;
+}
+
+.badges-box__item,
+.recent-games__list-item {
+  border: 1px solid rgba(170, 215, 255, 0.09);
+  border-radius: 13px !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.badges-box__item-icon,
+.recent-games__game-image {
+  border-radius: 10px !important;
+}
+
+.badges-box__item-description,
+.recent-games__game-description {
+  color: var(--ps5-text-muted) !important;
+}
+
+/* Juegos, incluida la elevación visual sin cambiar el layout de Hydra. */
+.user-library-game__wrapper {
+  overflow: hidden;
+  border: 1px solid rgba(170, 215, 255, 0.15) !important;
+  border-radius: 18px !important;
+  background: rgba(8, 18, 36, 0.82) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3) !important;
+  transition: transform var(--ps5-dur) var(--ps5-ease), box-shadow var(--ps5-dur) ease, border-color var(--ps5-dur) ease !important;
+}
+
+.user-library-game__wrapper:hover,
+.user-library-game__wrapper:focus-within {
+  z-index: var(--ps5-z-card-focus);
+  transform: translateY(-2px) scale(1.008) !important;
+  border-color: rgba(120, 194, 255, 0.54) !important;
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.42), 0 0 24px rgba(56, 161, 255, 0.18) !important;
+}
+
+.user-library-game__overlay {
+  background: linear-gradient(0deg, rgba(3, 8, 18, 0.92), rgba(3, 8, 18, 0.32) 70%, transparent) !important;
+}
+
+.user-library-game__playtime {
+  border: 1px solid rgba(196, 226, 255, 0.2) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  background: rgba(5, 16, 36, 0.64) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+@media (max-width: 900px) {
+  .profile-content__right-content {
+    width: 260px !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .profile-hero__user-information {
+    min-height: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 58px 22px 26px !important;
+  }
+
+  .profile-hero__avatar-button {
+    width: 92px !important;
+    min-width: 92px !important;
+    height: 92px !important;
+  }
+
+  .profile-hero__hero-panel {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px !important;
+  }
+
+  .profile-hero__actions {
+    justify-content: flex-start;
+  }
+
+  .profile-content__section {
+    flex-direction: column;
+    border-radius: 24px 24px 0 0 !important;
+  }
+
+  .profile-content__main,
+  .profile-content__right-content {
+    width: 100% !important;
+  }
+
+  .profile-content__tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .profile-content__tabs::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   20 · PANELES (ajustes, estadísticas, cajas del perfil)
+   ========================================================================== */
+:is(
+  .box,
+  [class~="box"],
+  [class*="user-stats"]:not([class*="__"]),
+  [class~="profile-content__box"],
+  [class*="settings"][class*="panel"],
+  [class*="paper"],
+  [class*="surface"]
+):not([class*="download-group"], [class*="game-card"], [class*="modal"], [class*="bottom-panel"]) {
+  background: var(--ps5-glass) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-panel) !important;
+  box-shadow: var(--ps5-shadow-panel) !important;
+  overflow: hidden;
+}
+
+:is([class*="box__header"], [class*="box-header"], [class*="user-stats__header"]) {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--ps5-border-soft) !important;
+  border-radius: 0 !important;
+}
+
+/* Ficha de juego: hero cinematográfico y superficies Liquid Glass. */
+.game-details__wrapper {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 75% 32% at 52% 0%, rgba(86, 148, 227, 0.18), transparent 78%),
+    radial-gradient(ellipse 45% 36% at 5% 48%, rgba(83, 106, 154, 0.11), transparent 80%),
+    linear-gradient(180deg, #0d1420 0%, #090e18 42%, #060a11 100%) !important;
+}
+
+.game-details__container {
+  background: transparent !important;
+}
+
+.game-details__hero {
+  position: relative !important;
+  isolation: isolate;
+  height: clamp(380px, 50vh, 540px) !important;
+  min-height: 360px !important;
+  margin: clamp(14px, 2vw, 26px) clamp(12px, 2.2vw, 34px) 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 30px !important;
+  background: #101927;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.46) !important;
+}
+
+.game-details__hero-image {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 36% !important;
+  filter: saturate(1.14) brightness(0.96);
+}
+
+.game-details__hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(4, 8, 15, 0.62) 0%, rgba(4, 8, 15, 0.30) 38%, transparent 76%),
+    linear-gradient(0deg, rgba(4, 8, 15, 0.24) 0%, rgba(4, 8, 15, 0.035) 38%, transparent 60%);
+}
+
+.game-details__hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.18), transparent 18% 72%, rgba(255, 255, 255, 0.08)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10), transparent 24%);
+  mix-blend-mode: screen;
+  opacity: 0.48;
+}
+
+.game-details__hero-logo-backdrop {
+  position: absolute !important;
+  inset: 0;
+  z-index: 3 !important;
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  padding: clamp(22px, 3.5vw, 48px) clamp(18px, 3vw, 42px) clamp(16px, 2.2vw, 26px) !important;
+}
+
+.game-details__hero-content {
+  position: relative;
+  z-index: 3;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  height: auto !important;
+  min-height: 0;
+  padding: 0 !important;
+}
+
+.game-details__hero-standard-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: min(62%, 680px);
+  min-width: 0;
+}
+
+.game-details__game-logo {
+  display: block;
+  width: auto !important;
+  max-width: min(100%, 420px) !important;
+  max-height: 150px;
+  object-fit: contain;
+  object-position: left center;
+  filter: drop-shadow(0 8px 26px rgba(0, 0, 0, 0.68));
+}
+
+.game-details__game-logo-text {
+  filter: drop-shadow(0 5px 22px rgba(0, 0, 0, 0.72));
+}
+
+.game-details__hero-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.game-details__hero-buttons :is(button, a, [role="button"]) {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22) !important;
+}
+
+.game-details__hero-panel {
+  flex: 0 0 auto;
+  width: 100% !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+.game-details__hero-panel .hero-panel__container {
+  width: min(100%, 1080px);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.game-details__hero-panel .hero-panel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  width: 100%;
+  height: auto !important;
+  min-height: 74px !important;
+  box-sizing: border-box;
+  border: 1px solid rgba(170, 215, 255, 0.26) !important;
+  border-radius: 20px !important;
+  background:
+    linear-gradient(120deg, rgba(56, 161, 255, 0.22), rgba(19, 52, 98, 0.34) 52%, rgba(255, 255, 255, 0.07)),
+    rgba(5, 14, 32, 0.88) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(155%) !important;
+  backdrop-filter: blur(20px) saturate(155%) !important;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0 22px rgba(56, 161, 255, 0.14) !important;
+  padding: 12px clamp(14px, 2vw, 24px) !important;
+}
+
+.game-details__hero-panel .hero-panel__content {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.game-details__hero-panel .hero-panel__content p {
+  color: rgba(235, 244, 255, 0.78) !important;
+  line-height: 1.35;
+}
+
+.game-details__hero-panel .hero-panel__content p:first-child {
+  color: #ffffff !important;
+}
+
+.game-details__hero-panel .hero-panel-actions__container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px !important;
+}
+
+.game-details__hero-panel .hero-panel-actions__action {
+  min-width: 40px;
+  min-height: 40px;
+  padding-inline: 13px !important;
+  border: 1px solid rgba(190, 222, 255, 0.24) !important;
+  border-radius: 999px !important;
+  background: rgba(220, 238, 255, 0.12) !important;
+  color: #f5f9ff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  transition:
+    background-color var(--ps5-dur-fast) ease,
+    border-color var(--ps5-dur-fast) ease,
+    transform var(--ps5-dur-fast) ease;
+}
+
+.game-details__hero-panel .hero-panel-actions__action:hover:not(:disabled) {
+  border-color: rgba(190, 222, 255, 0.42) !important;
+  background: rgba(56, 161, 255, 0.28) !important;
+  transform: translateY(-1px);
+}
+
+.game-details__description-container {
+  align-items: flex-start !important;
+  gap: clamp(18px, 2vw, 30px) !important;
+  padding: clamp(22px, 3vw, 42px) clamp(18px, 3vw, 46px) 56px !important;
+  background:
+    radial-gradient(ellipse 55% 22% at 50% 0%, rgba(88, 132, 190, 0.09), transparent 90%),
+    linear-gradient(180deg, rgba(11, 17, 27, 0.30), rgba(5, 9, 15, 0.72)) !important;
+}
+
+.game-details__description-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  gap: 22px;
+}
+
+.game-details__description-container .description-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+  min-height: 76px;
+  padding: 18px 24px !important;
+  border: 0 !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.025) 50%, rgba(255, 255, 255, 0.07)),
+    rgba(20, 29, 43, 0.16) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.26) !important;
+}
+
+.game-details__description-title {
+  margin: 12px 0 0 !important;
+  font-size: clamp(1.25rem, 1.8vw, 1.65rem) !important;
+}
+
+.game-details__description {
+  padding: clamp(18px, 2.2vw, 28px) !important;
+  border: 0;
+  border-radius: 24px;
+  background: var(--ps5-glass);
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+  color: var(--ps5-text-secondary) !important;
+  line-height: 1.75;
+}
+
+.game-details__description-content .gallery-slider {
+  width: min(100%, 880px) !important;
+  max-width: 880px !important;
+  margin-inline: auto;
+}
+
+.game-details__description-container .gallery-slider__viewport {
+  width: 100% !important;
+  max-width: 880px !important;
+  margin-inline: 0 !important;
+  overflow: hidden;
+  border: 0;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.34) !important;
+}
+
+.game-details__description-container .gallery-slider__preview-button {
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+.game-details__description-container .content-sidebar {
+  display: flex;
+  flex: 0 0 clamp(250px, 25vw, 310px);
+  flex-direction: column;
+  width: clamp(250px, 25vw, 310px);
+  min-width: 0;
+  gap: 16px;
+}
+
+.game-details__description-container .content-sidebar > .sidebar-section {
+  position: relative;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 24px !important;
+  background: var(--ps5-glass) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.28) !important;
+}
+
+.game-details__description-container .sidebar-section__header {
+  padding: 18px 20px !important;
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.025));
+}
+
+.game-details__description-container .sidebar-section__button {
+  color: var(--ps5-text) !important;
+}
+
+.game-details__description-container .sidebar-section__content {
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.game-details__description-container .content-sidebar .list__item {
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.075);
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transition:
+    background-color var(--ps5-dur-fast) ease,
+    border-color var(--ps5-dur-fast) ease,
+    transform var(--ps5-dur-fast) ease;
+}
+
+.game-details__description-container .content-sidebar .list__item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.13);
+}
+
+/* Gestor de temas de Hydra: tarjetas, estado activo y acciones. */
+.settings-appearance {
+  gap: 20px;
+}
+
+.settings-appearance__actions {
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--ps5-border-soft);
+  border-radius: 20px;
+  background: var(--ps5-glass);
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+  box-shadow: var(--ps5-shadow-panel);
+}
+
+.settings-appearance__actions-left,
+.settings-appearance__actions-right {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.settings-appearance__button {
+  min-height: 40px;
+  gap: 8px;
+}
+
+.settings-appearance__themes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
+}
+
+.theme-card {
+  position: relative;
+  min-width: 0;
+  min-height: 188px;
+  overflow: hidden;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--ps5-border-soft);
+  border-radius: 22px;
+  background:
+    radial-gradient(90% 130% at 0% 0%, rgba(56, 161, 255, 0.13), transparent 68%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.015)),
+    rgba(8, 17, 35, 0.48);
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+  box-shadow: var(--ps5-shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition:
+    transform var(--ps5-dur) var(--ps5-ease),
+    border-color var(--ps5-dur-fast) ease,
+    box-shadow var(--ps5-dur) var(--ps5-ease);
+}
+
+.theme-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  width: 76%;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(170, 215, 255, 0.55), transparent);
+}
+
+.theme-card:is(:hover, :focus-within) {
+  transform: translateY(-2px);
+  border-color: rgba(110, 190, 255, 0.38);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42), 0 0 24px rgba(0, 112, 209, 0.14);
+}
+
+.theme-card--active {
+  border-color: rgba(110, 190, 255, 0.46);
+  background:
+    radial-gradient(90% 130% at 0% 0%, rgba(56, 161, 255, 0.22), transparent 68%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02)),
+    rgba(8, 22, 46, 0.62);
+  box-shadow: var(--ps5-shadow-panel), 0 0 28px rgba(0, 112, 209, 0.16);
+}
+
+.theme-card__header,
+.theme-card__author,
+.theme-card__actions {
+  position: relative;
+  z-index: 1;
+}
+
+.theme-card__header__title {
+  color: var(--ps5-text) !important;
+  font-size: var(--ps5-fs-lg) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+}
+
+.theme-card__author {
+  color: var(--ps5-text-muted) !important;
+}
+
+.theme-card__author__name {
+  padding: 0 2px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #a7d6ff !important;
+}
+
+.theme-card__author__name:hover {
+  color: #ffffff !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.theme-card__actions {
+  position: relative;
+  inset: auto;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.theme-card__actions__left,
+.theme-card__actions__right {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-card__actions__right {
+  margin-left: auto;
+}
+
+.theme-card__actions__right :is(button, [role="button"]) {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 !important;
+}
+
+.settings-appearance__no-themes {
+  min-height: 180px;
+  border: 1px dashed rgba(170, 215, 255, 0.30);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(56, 161, 255, 0.08), rgba(255, 255, 255, 0.02));
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+  transition: border-color var(--ps5-dur-fast) ease, background var(--ps5-dur) ease;
+}
+
+.settings-appearance__no-themes:hover {
+  border-color: rgba(110, 190, 255, 0.58);
+  background: linear-gradient(145deg, rgba(56, 161, 255, 0.14), rgba(255, 255, 255, 0.035));
+}
+
+.settings-appearance__no-themes__icon svg {
+  color: #9bd0ff !important;
+}
+
+.settings-appearance__no-themes__text {
+  color: var(--ps5-text-secondary) !important;
+}
+
+/* El cristal de la ficha no lleva contornos ni sombras que parezcan bordes. */
+.game-details__hero,
+.game-details__hero-image,
+.game-details__hero-buttons :is(button, a, [role="button"]),
+.game-details__description-container .description-header,
+.game-details__description-container .game-details__description,
+.game-details__description-container .gallery-slider__viewport,
+.game-details__description-container .gallery-slider__preview-button,
+.game-details__description-container .content-sidebar > .sidebar-section,
+.game-details__description-container .content-sidebar .list__item {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.game-details__hero::before {
+  content: none !important;
+  display: none !important;
+}
+
+@media (max-width: 1100px) {
+  .catalogue__content {
+    grid-template-columns: minmax(0, 1fr) minmax(230px, 260px) !important;
+  }
+
+  .game-details__hero {
+    margin-inline: 18px !important;
+  }
+
+  .game-details__description-container {
+    padding-inline: 20px !important;
+  }
+
+  .game-details__description-container .content-sidebar {
+    flex-basis: 250px;
+    width: 250px;
+  }
+}
+
+@media (max-width: 850px) {
+  .catalogue__content {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .catalogue__filters-container {
+    grid-row: 1;
+  }
+
+  .catalogue__filters-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  }
+
+  .game-details__hero {
+    height: 420px !important;
+    margin-inline: 12px !important;
+    border-radius: 24px !important;
+  }
+
+  .game-details__hero-logo-backdrop {
+    padding: 18px !important;
+  }
+
+  .game-details__hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .game-details__hero-panel .hero-panel-actions__container {
+    justify-content: flex-start;
+  }
+
+  .game-details__hero-standard-meta {
+    max-width: 100%;
+  }
+
+  .game-details__hero-buttons {
+    justify-content: flex-start;
+  }
+
+  .game-details__description-container .description-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .game-details__description-container {
+    flex-direction: column !important;
+    padding-inline: 14px !important;
+  }
+
+  .game-details__description-container .content-sidebar {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+table { border-collapse: separate; border-spacing: 0; }
+th { color: var(--ps5-text-muted) !important; font-weight: var(--ps5-fw-semibold) !important; }
+td, th { border-color: var(--ps5-border-soft) !important; }
+
+.react-loading-skeleton { --base-color: rgba(255, 255, 255, 0.06); --highlight-color: rgba(255, 255, 255, 0.14); border-radius: var(--ps5-radius-md); }
+[class*="skeleton"]:not(.react-loading-skeleton) { border-radius: var(--ps5-radius-md) !important; background-color: rgba(255, 255, 255, 0.06) !important; }
+
+
+/* ==========================================================================
+   21 · PESTAÑAS GENÉRICAS, INSIGNIAS, AVATARES
+   ========================================================================== */
+[role="tab"] {
+  border-radius: var(--ps5-radius-pill) !important;
+  color: var(--ps5-text-secondary) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+[role="tab"]:hover { background: var(--ps5-surface-3) !important; color: var(--ps5-text) !important; }
+
+[role="tab"][aria-selected="true"] {
+  background: var(--ps5-white) !important;
+  color: var(--ps5-text-on-light) !important;
+  font-weight: var(--ps5-fw-bold) !important;
+  box-shadow: 0 8px 26px rgba(255, 255, 255, 0.18) !important;
+}
+
+:is([class*="badge"]:not([class*="__"], [class*="game-card"]), [class*="chip"]:not([class*="__"]), [class*="-tag"]:not([class*="__"])):not([class*="badges"] *, [class*="dropdown"] *, [role="menu"] *) {
+  border-radius: var(--ps5-radius-pill) !important;
+  background: var(--ps5-surface-3) !important;
+  border: 1px solid var(--ps5-border) !important;
+  color: var(--ps5-text) !important;
+  font-weight: var(--ps5-fw-semibold);
+}
+
+[class*="badges"] > :is(div, li, button, article, a) {
+  border-radius: var(--ps5-radius-md) !important;
+  background: var(--ps5-surface-2) !important;
+  border: 1px solid var(--ps5-border-soft) !important;
+}
+
+[class*="badges"] > * :is(div, p, span, h3, h4, small) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+img[class*="avatar"],
+[class*="avatar"]:not([class*="__"], [class*="container"]) {
+  border-radius: 50% !important;
+  object-fit: cover;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18), 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+
+/* ==========================================================================
+   22 · MODALES, TOOLTIPS Y NOTIFICACIONES
+   ========================================================================== */
+[class*="modal"][class*="backdrop"],
+[class*="modal-backdrop"],
+[class*="modal-overlay"] {
+  background: rgba(4, 8, 20, 0.62) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) brightness(0.75) !important;
+  backdrop-filter: var(--ps5-blur) brightness(0.75) !important;
+  animation: ps5-fade-in var(--ps5-dur) ease backwards;
+}
+
+dialog,
+[role="dialog"],
+[role="alertdialog"],
+[aria-modal="true"],
+[class~="modal"] {
+  background: var(--ps5-glass-strong) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-modal) !important;
+  box-shadow: var(--ps5-shadow-pop), 0 0 80px rgba(0, 112, 209, 0.18) !important;
+  color: var(--ps5-text) !important;
+  animation: ps5-modal-in 0.55s var(--ps5-ease) backwards;
+}
+
+dialog::backdrop { background: rgba(4, 8, 20, 0.62); -webkit-backdrop-filter: var(--ps5-blur); backdrop-filter: var(--ps5-blur); }
+
+[class*="modal__title"], [class~="modal"] :is(h1, h2) {
+  font-weight: var(--ps5-fw-black) !important;
+  letter-spacing: -0.03em !important;
+}
+
+[class*="modal__header"], [class*="modal__footer"], [class*="modal__actions"] { border-color: var(--ps5-border-soft) !important; }
+
+[role="tooltip"],
+.react-tooltip,
+[class*="tooltip"]:not([class*="__"]) {
+  background: rgba(6, 14, 36, 0.96) !important;
+  color: var(--ps5-text) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-pill) !important;
+  padding: 6px 14px !important;
+  font-size: var(--ps5-fs-sm) !important;
+  font-weight: var(--ps5-fw-semibold) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5) !important;
+  opacity: 1;
+}
+
+[role="alert"],
+[role="status"],
+[class*="toast"]:not([class*="__"]) {
+  background: var(--ps5-glass-strong) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+  border: 1px solid var(--ps5-border) !important;
+  border-radius: var(--ps5-radius-panel) !important;
+  box-shadow: var(--ps5-shadow-pop) !important;
+  color: var(--ps5-text) !important;
+}
+
+
+/* ==========================================================================
+   23 · ENFOQUE GLOBAL (teclado / mando) · especificidad 0
+   ========================================================================== */
+:where(a, summary, [tabindex]:not([tabindex="-1"]), [role="tab"], [role="menuitem"], [role="option"]):focus-visible {
+  outline: none !important;
+  box-shadow: var(--ps5-focus-ring) !important;
+}
+
+:where(*):focus { outline-color: var(--ps5-blue-light); }
+
+
+/* ==========================================================================
+   24 · KEYFRAMES
+   ========================================================================== */
+@keyframes ps5-ambient-drift {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
+  50%  { transform: translate3d(1%, 1%, 0) scale(1.035); }
+  100% { transform: translate3d(-1%, 2%, 0) scale(1.015); }
+}
+
+@keyframes ps5-modal-in {
+  from { opacity: 0; transform: scale(0.985) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes ps5-menu-in {
+  from { opacity: 0; transform: scale(0.99) translateY(-3px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes ps5-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+
+/* ==========================================================================
+   25 · ACCESIBILIDAD: MOVIMIENTO REDUCIDO
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  body::before { animation: none !important; }
+
+  :root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card):is(:hover, :focus-visible, :focus-within),
+  [class*="game-item"]:not([class*="__"]):is(:hover, :focus-visible) {
+    animation: none !important;
+    box-shadow:
+      0 0 0 3px var(--ps5-midnight),
+      0 0 0 6px #ffffff,
+      0 0 0 9px rgba(56, 161, 255, 0.5),
+      0 0 34px 10px rgba(0, 112, 209, 0.5) !important;
+  }
+}
+
+/* ==========================================================================
+   26 · AJUSTE FINAL: PANTALLAS PEQUEÑAS, TÁCTIL Y CONTRASTE
+   ========================================================================== */
+@media (max-width: 720px) {
+  .library__toolbar {
+    gap: 8px;
+    padding: 8px;
+    border-radius: 16px !important;
+  }
+
+  .library-category-filter__option {
+    padding-inline: 11px !important;
+  }
+
+  .library__actions {
+    flex-wrap: wrap;
+  }
+
+  .library__action:not(.library__action--icon) {
+    padding-inline: 12px !important;
+  }
+
+  .download-group:not(.download-group--hero) {
+    padding: 8px 12px 20px !important;
+  }
+
+  .download-group__simple-card {
+    gap: 12px;
+    padding: 10px !important;
+    border-radius: 18px !important;
+  }
+
+  .download-group__simple-thumbnail {
+    flex-basis: clamp(100px, 20vw, 150px);
+    width: clamp(100px, 20vw, 150px);
+  }
+
+  .download-group__simple-actions {
+    gap: 6px;
+  }
+
+  .home__header {
+    position: relative;
+    top: auto;
+    padding: 10px 16px !important;
+  }
+
+  .home__buttons-list {
+    flex: 1 1 100%;
+  }
+
+  .home__header > :is(button, [role="button"]) {
+    margin-left: 0;
+  }
+
+  .home__content > .hero {
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+    height: clamp(320px, 48vh, 400px) !important;
+    min-height: 320px !important;
+    margin: 16px auto 0 !important;
+    border-radius: 22px !important;
+  }
+
+  .home__content > .hero::before {
+    top: 18px;
+    left: 18px;
+    padding: 7px 11px;
+    font-size: 9px;
+  }
+
+  .home__cards {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important;
+    gap: 14px !important;
+    padding: 18px 16px 36px !important;
+  }
+
+  .home__title {
+    padding-inline: 16px;
+    font-size: 1.4rem !important;
+  }
+
+  .settings-appearance__actions {
+    align-items: stretch;
+  }
+
+  .settings-appearance__actions-left,
+  .settings-appearance__actions-right {
+    width: 100%;
+  }
+
+  .settings-appearance__actions-right {
+    justify-content: flex-end;
+  }
+
+  .search-dropdown {
+    max-height: min(350px, calc(100vh - 96px));
+  }
+}
+
+@media (max-width: 520px) {
+  .library-category-filter__option {
+    gap: 5px;
+    padding-inline: 8px !important;
+  }
+
+  .library-toolbar-menu__trigger {
+    padding-inline: 10px !important;
+  }
+
+  .library__action:not(.library__action--icon) {
+    padding-inline: 10px !important;
+    font-size: var(--ps5-fs-xs) !important;
+  }
+
+  .download-group__simple-card {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .download-group__simple-thumbnail {
+    flex-basis: 88px;
+    width: 88px;
+  }
+
+  .download-group__simple-info {
+    flex: 1 1 180px;
+  }
+
+  .download-group__simple-actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
+
+  .home__content > .hero {
+    width: calc(100% - 20px) !important;
+    height: clamp(280px, 44vh, 340px) !important;
+    min-height: 280px !important;
+    margin: 10px auto 0 !important;
+    border-radius: 18px !important;
+  }
+
+  .home__content > .hero .hero__content {
+    gap: 8px;
+    padding: 20px 18px 20px 44px !important;
+  }
+
+  .home__content > .hero .hero__logo {
+    width: min(250px, 86%);
+    max-height: 104px;
+  }
+
+  .home__content > .hero .hero__description {
+    font-size: var(--ps5-fs-sm) !important;
+    line-height: 1.45;
+    -webkit-line-clamp: 2;
+  }
+
+  .home__content > .hero .hero__content::after {
+    min-height: 42px;
+    margin-top: 10px;
+    padding-inline: 24px;
+    font-size: var(--ps5-fs-sm);
+  }
+
+  .home__buttons-list {
+    gap: 6px !important;
+  }
+
+  .home__buttons-list :is(button, [role="button"]) {
+    min-height: 38px;
+    padding-inline: 12px !important;
+    font-size: var(--ps5-fs-xs) !important;
+  }
+
+  .home__cards {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 165px), 1fr)) !important;
+    gap: 11px !important;
+    padding-inline: 12px !important;
+  }
+
+  .home__cards > .game-card .game-card__content {
+    padding: 11px 12px 13px !important;
+  }
+
+  .settings-appearance__button {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .settings-appearance__actions-right {
+    justify-content: flex-start;
+  }
+
+  .settings-appearance__actions-right .settings-appearance__button {
+    width: 100%;
+  }
+
+  .theme-card {
+    min-height: 180px;
+    padding: 16px;
+  }
+
+  .theme-card__actions {
+    align-items: stretch;
+  }
+
+  .theme-card__actions__left {
+    flex: 1 1 100%;
+  }
+
+  .theme-card__actions__left .button {
+    width: 100%;
+  }
+
+  .game-details__hero {
+    height: clamp(320px, 54vh, 390px) !important;
+    min-height: 320px !important;
+  }
+
+  .game-details__hero-logo-backdrop {
+    padding: 14px !important;
+  }
+
+  .game-details__hero-panel .hero-panel {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px !important;
+  }
+
+  .game-details__hero-panel .hero-panel__content {
+    flex-basis: auto;
+  }
+
+  .game-details__hero-panel .hero-panel-actions__container {
+    justify-content: flex-start;
+  }
+
+  .game-details__description-container {
+    padding-inline: 10px !important;
+  }
+
+  .title-bar-search {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (hover: none) {
+  :root :is([class*="game-card__wrapper"], [class*="library-game__wrapper"], .game-card):hover:not(:focus-visible),
+  .catalogue__games-container .game-item:hover:not(:focus-visible),
+  .theme-card:hover:not(:focus-visible),
+  .game-details__description-container .content-sidebar .list__item:hover:not(:focus-visible) {
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --ps5-text-secondary: rgba(255, 255, 255, 0.9);
+    --ps5-text-muted: rgba(255, 255, 255, 0.72);
+    --ps5-border-soft: rgba(255, 255, 255, 0.24);
+    --ps5-border: rgba(255, 255, 255, 0.34);
+  }
+
+  .title-bar-search,
+  .search-dropdown,
+  .theme-card,
+  .game-details__hero-panel .hero-panel {
+    border-color: rgba(230, 243, 255, 0.56) !important;
+  }
+}
+
+/* ========================================================================
+   28 · ACABADO PLAYSTATION: SELECCIÓN, BRILLO Y MOVIMIENTO CINEMÁTICO
+   ======================================================================== */
+[class*="sidebar"] :is([class*="--active"], [class*="__active"], [aria-current="page"], [aria-selected="true"]):not([class*="dropdown"] *, [class*="sidebar-profile"] *) {
+  background:
+    linear-gradient(100deg, rgba(56, 161, 255, 0.22), rgba(56, 161, 255, 0.06) 72%),
+    rgba(255, 255, 255, 0.10) !important;
+  box-shadow:
+    inset 3px 0 0 #65baff,
+    inset 0 0 0 1px rgba(170, 220, 255, 0.22),
+    0 0 22px rgba(0, 112, 209, 0.18) !important;
+}
+
+[class*="sidebar"] :is([class*="--active"], [class*="__active"], [aria-current="page"], [aria-selected="true"]):not([class*="dropdown"] *, [class*="sidebar-profile"] *) svg {
+  color: #b7e0ff !important;
+  filter: drop-shadow(0 0 6px rgba(56, 161, 255, 0.48));
+}
+
+.home__title {
+  position: relative;
+}
+
+.home__title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -7px;
+  width: clamp(42px, 6vw, 72px);
+  height: 2px;
+  border-radius: var(--ps5-radius-pill);
+  background: linear-gradient(90deg, #38a1ff, rgba(56, 161, 255, 0));
+  box-shadow: 0 0 14px rgba(56, 161, 255, 0.38);
+}
+
+.game-details__hero-image {
+  transform: scale(1.02);
+  transition:
+    transform var(--ps5-dur-slow) var(--ps5-ease),
+    filter var(--ps5-dur-slow) var(--ps5-ease);
+}
+
+.game-details__hero:is(:hover, :focus-within) .game-details__hero-image {
+  transform: scale(1.055);
+  filter: saturate(1.18) brightness(1.02);
+}
+
+.game-details__hero::before {
+  animation: ps5-cinematic-light 8s ease-in-out infinite alternate;
+}
+
+.profile-hero__avatar-button {
+  transition:
+    transform var(--ps5-dur) var(--ps5-ease),
+    box-shadow var(--ps5-dur) var(--ps5-ease);
+}
+
+.profile-hero__avatar-button:is(:hover, :focus-visible) {
+  transform: scale(1.025);
+  box-shadow:
+    0 0 0 5px rgba(4, 12, 28, 0.72),
+    0 12px 36px rgba(0, 0, 0, 0.48),
+    0 0 42px rgba(56, 161, 255, 0.58) !important;
+}
+
+@keyframes ps5-cinematic-light {
+  from { opacity: 0.38; }
+  to { opacity: 0.54; }
+}
+
+@keyframes ps5-particle-float {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(1.6%, -1.1%, 0); }
+}
+
+@keyframes ps5-star-trails {
+  from {
+    background-position:
+      118% 18%, -18% 72%,
+      24% 31%, 24% 31%, 72% 76%, 72% 76%,
+      13px 19px, 71px 43px, 29px 107px,
+      113px 61px, 37px 151px, 157px 83px,
+      0 0, 0 0, 0 0, 0 0;
+  }
+  to {
+    background-position:
+      -18% 61%, 118% 34%,
+      24% 31%, 24% 31%, 72% 76%, 72% 76%,
+      13px 19px, 71px 43px, 29px 107px,
+      113px 61px, 37px 151px, 157px 83px,
+      0 0, 0 0, 0 0, 0 0;
+  }
+}
+.title-bar {
+  background: linear-gradient(180deg, rgba(13, 26, 50, 0.78), rgba(5, 10, 23, 0.82)) !important;
+  -webkit-backdrop-filter: var(--ps5-blur) !important;
+  backdrop-filter: var(--ps5-blur) !important;
+}
+
+:root .library__toolbar {
+  background:
+    linear-gradient(110deg, rgba(22, 72, 145, 0.30), rgba(7, 18, 42, 0.62) 58%, rgba(15, 50, 104, 0.28)),
+    var(--ps5-glass) !important;
+}
+
+:root .download-group__simple-card {
+  background:
+    linear-gradient(120deg, rgba(56, 161, 255, 0.045), transparent 46%),
+    var(--ps5-glass) !important;
+}
+
+:root .home__cards > .game-card {
+  background: linear-gradient(160deg, rgba(17, 34, 69, 0.68), rgba(5, 11, 25, 0.78)) !important;
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+}
+
+:root .home__cards > .game-card .game-card__content {
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(56, 161, 255, 0.08), transparent 58%),
+    linear-gradient(160deg, rgba(17, 34, 69, 0.56), rgba(5, 11, 25, 0.72)) !important;
+  -webkit-backdrop-filter: var(--ps5-blur-soft);
+  backdrop-filter: var(--ps5-blur-soft);
+}
+
+.profile-content__section {
+  background:
+    radial-gradient(ellipse 58% 36% at 12% 0%, rgba(36, 111, 190, 0.10), transparent 74%),
+    linear-gradient(155deg, rgba(12, 26, 51, 0.76), rgba(6, 13, 27, 0.82)) !important;
+}
+
+.profile-section {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.018) 55%),
+    rgba(8, 19, 39, 0.48) !important;
+}
+
+.game-details__hero-panel .hero-panel {
+  background:
+    linear-gradient(120deg, rgba(56, 161, 255, 0.15), rgba(19, 52, 98, 0.22) 52%, rgba(255, 255, 255, 0.045)),
+    rgba(5, 14, 32, 0.68) !important;
+}
+
+.search-dropdown {
+  background:
+    linear-gradient(145deg, rgba(56, 161, 255, 0.14), rgba(255, 255, 255, 0.035) 58%),
+    rgba(7, 16, 34, 0.68) !important;
+}
+
+.theme-card {
+  background:
+    radial-gradient(90% 130% at 0% 0%, rgba(56, 161, 255, 0.10), transparent 68%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012)),
+    rgba(8, 17, 35, 0.30) !important;
+}
+
+@media (forced-colors: active) {
+  :where(a, button, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 3px;
+    box-shadow: none !important;
+  }
+
+  .search-dropdown,
+  .theme-card {
+    border: 1px solid CanvasText !important;
+  }
+}
+
+/* ========================================================================
+   27 · MICROINTERACCIONES GLOBALES PARA TODOS LOS BOTONES
+   ======================================================================== */
+:root :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) {
+  transform-origin: center;
+  transition-property: transform, filter, box-shadow, background-color, border-color, color;
+  transition-duration: 360ms;
+  transition-timing-function: var(--ps5-ease);
+}
+
+@media (hover: hover) {
+  :root :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):hover:not(:disabled, [aria-disabled="true"]):not(:active) {
+    transform: translateY(-1px) scale(1.015) !important;
+    filter: brightness(1.025);
+    animation: ps5-button-bloom 600ms var(--ps5-ease) both;
+  }
+}
+
+:root :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):focus-visible:not(:disabled, [aria-disabled="true"]) {
+  transform: translateY(-1px) scale(1.008) !important;
+  animation: ps5-button-focus-glow 1.8s ease-in-out infinite alternate;
+}
+
+:root :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):active:not(:disabled, [aria-disabled="true"]) {
+  transform: translateY(0) scale(0.99) !important;
+  filter: brightness(0.985);
+  animation: none !important;
+  transition-duration: 180ms;
+}
+
+:root :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):is(:disabled, [aria-disabled="true"]) {
+  animation: none !important;
+  filter: none;
+  transform: none !important;
+}
+
+@keyframes ps5-button-bloom {
+  0% { filter: brightness(1); }
+  55% { filter: brightness(1.04); }
+  100% { filter: brightness(1.025); }
+}
+
+@keyframes ps5-button-focus-glow {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):is(:hover, :focus-visible, :active) {
+    animation: none !important;
+    filter: none !important;
+    transform: none !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@keyframes ps5-rgb-outline {
+  0%, 100% { outline-color: rgba(255, 68, 140, 0.72); }
+  33% { outline-color: rgba(55, 225, 255, 0.76); }
+  66% { outline-color: rgba(156, 100, 255, 0.72); }
+}
+
+@media (hover: hover) and (forced-colors: none) {
+  :root :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):hover:not(:disabled, [aria-disabled="true"]):not(:active) {
+    outline: 1px solid rgba(55, 225, 255, 0.68) !important;
+    outline-offset: 1px;
+    animation:
+      ps5-button-bloom 600ms var(--ps5-ease) both,
+      ps5-rgb-outline 3.2s ease-in-out infinite;
+  }
+
+  :root :is(
+    .home__content > .hero,
+    .home__header,
+    .home__cards > .game-card,
+    .catalogue__content,
+    .catalogue__filters-container .filter-section,
+    .game-item,
+    .library__toolbar,
+    .theme-card,
+    .download-group:not(.download-group--hero),
+    .download-group__simple-card,
+    .library-game-card__wrapper,
+    .library-game-card-large,
+    .user-library-game__wrapper,
+    .profile-hero__hero-panel,
+    .profile-hero__content-box,
+    .profile-content__section,
+    .profile-section,
+    .game-details__hero,
+    .game-details__hero-panel .hero-panel,
+    .game-details__description,
+    .game-details__description-container .content-sidebar > .sidebar-section,
+    .settings-appearance__actions,
+    .settings-appearance__no-themes
+  ):is(:hover, :focus-visible, :focus-within) {
+    outline: 1px solid rgba(55, 225, 255, 0.68) !important;
+    outline-offset: 2px;
+    animation: ps5-rgb-outline 3.8s ease-in-out infinite;
+  }
+
+  .title-bar-search:is(:hover, :focus-within),
+  .search-dropdown__item:is(:hover, :focus-visible, .search-dropdown__item--active) {
+    outline: 1px solid rgba(55, 225, 255, 0.68) !important;
+    outline-offset: 1px;
+    animation: ps5-rgb-outline 3.2s ease-in-out infinite;
+  }
+}
+
+@media (forced-colors: none) {
+  :root :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):focus-visible:not(:disabled, [aria-disabled="true"]) {
+    outline: 1px solid rgba(55, 225, 255, 0.68) !important;
+    outline-offset: 2px;
+    animation:
+      ps5-button-focus-glow 1.8s ease-in-out infinite alternate,
+      ps5-rgb-outline 3.2s ease-in-out infinite;
+  }
+}
+
+/* ==========================================================================
+   FIN · HYDRA × PS5 EXPERIENCE v10
+   ========================================================================== */
